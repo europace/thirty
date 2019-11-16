@@ -1,4 +1,4 @@
-# thirty
+# λ thirty
 
 Lightweight extensions that makes AWS Lambda functions easy to develop, testable
 and type safe.
