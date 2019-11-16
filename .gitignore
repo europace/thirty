@@ -1,0 +1,12 @@
+.idea
+
+# libs
+node_modules
+
+# builds
+dist
+*.js
+*.d.ts
+
+# configs
+!webpack.config.js
