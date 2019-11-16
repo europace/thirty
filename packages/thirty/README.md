@@ -29,7 +29,7 @@ import { compose, eventType } from 'thirty/core';
 import { json } from 'thirty/jsonParser';
 import { jwtAuth, tokenFromHeaderFactory } from 'thirty/jwtAuth';
 import { errorHandler } from 'thirty/httpErrorHandler';
-import { inject } from 'thirty/injection';
+import { inject } from 'thirty/inject';
 
 export const handler = compose(
   eventType<APIGatewayProxyEvent>(),
