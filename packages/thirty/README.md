@@ -1,6 +1,6 @@
 # λ thirty
 
-Lightweight extensions that makes AWS Lambda functions easy to develop, testable
+Lightweight extensions that make AWS Lambda functions easy to develop, testable
 and type safe.
 
 > _In the system of Greek numerals lambda has a value of 30_
