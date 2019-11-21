@@ -237,23 +237,23 @@ export const handler = compose(
 
 `thirty/jwtAuth` already provides factory functions to retrieve the token from headers or cookie:
 
-`tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
-```typescript
-import { tokenFromHeaderFactory } from 'thirty/jwtAuth';
+- `tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
+    ```typescript
+    import { tokenFromHeaderFactory } from 'thirty/jwtAuth';
+    
+    {
+        getToken: tokenFromHeaderFactory()
+    }
+    ```
 
-{
-  getToken: tokenFromHeaderFactory()
-}
-```
-
-`tokenFromCookieFactory` requires `cookieParser` middleware and expects a key for cookie entry (default is `'authentication'`).
-```typescript
-import { tokenFromCookieFactory } from 'thirty/jwtAuth';
-
-{
-  getToken: tokenFromCookieFactory()
-}
-```
+- `tokenFromCookieFactory` requires `cookieParser` middleware and expects a key for cookie entry (default is `'authentication'`).
+    ```typescript
+    import { tokenFromCookieFactory } from 'thirty/jwtAuth';
+  
+    {
+        getToken: tokenFromCookieFactory()
+    }
+    ```
 
 ### `xsrfCheck`
 TODO
