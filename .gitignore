@@ -1,4 +1,5 @@
 .idea
+.DS_Store
 
 # libs
 node_modules
