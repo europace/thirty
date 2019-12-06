@@ -44,10 +44,13 @@ export const getDecoded = token => {
   return decoded;
 };
 
-export const tokenFromHeaderFactory = <T extends APIGatewayProxyEvent>(
-  headerName = 'Authorization',
+type TokenFromHeaderRequiredEvent = APIGatewayProxyEvent & {
+  sanitizedHeaders: APIGatewayProxyEvent['headers'];
+};
+export const tokenFromHeaderFactory = <T extends TokenFromHeaderRequiredEvent>(
+  headerName = 'authorization',
 ) => (event: T) => {
-  const header = event.headers[headerName];
+  const header = event.sanitizedHeaders[headerName];
   if (!header || !header.length) {
     throw new UnauthorizedError();
   }
@@ -55,7 +58,8 @@ export const tokenFromHeaderFactory = <T extends APIGatewayProxyEvent>(
   return token;
 };
 
-export const tokenFromCookieFactory = <T extends APIGatewayProxyEvent & { cookie: object }>(
+type TokenFromCookieRequiredEvent = APIGatewayProxyEvent & { cookie: object };
+export const tokenFromCookieFactory = <T extends TokenFromCookieRequiredEvent>(
   fieldName = 'authentication',
 ) => (event: T) => {
   const value = event.cookie[fieldName];

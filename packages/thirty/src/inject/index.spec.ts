@@ -21,14 +21,14 @@ beforeAll(() => {
   });
 });
 
-it('soll Services injecten und Returnwerte der Testfunktionen zurückgeben', async () => {
+it('should inject and return services', async () => {
   const result = await handler({});
   const expectedResult = { fromA: 'b', fromB: 'a' };
 
   expect(result).toEqual(expectedResult);
 });
 
-it('soll Services injecten und cachen, sodass bei einem zweiten Aufruf der Cache verwendet wird', async () => {
+it('should initialize service only once, so that cache is used on the second handler call', async () => {
   await handler({});
   await handler({});
   expect(aService).toBeCalledTimes(1);

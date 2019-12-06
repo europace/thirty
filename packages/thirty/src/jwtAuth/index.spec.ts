@@ -43,9 +43,9 @@ describe('tokenFromHeaderFactory', () => {
   it('should create a function which retrieves token from header object', () => {
     const TOKEN = 'TOKEN';
     const getTokenFromHeader = tokenFromHeaderFactory();
-    const result = getTokenFromHeader(({ headers: { Authorization: `Bearer ${TOKEN}` } } as Partial<
-      APIGatewayProxyEvent
-    >) as any);
+    const result = getTokenFromHeader(({
+      sanitizedHeaders: { authorization: `Bearer ${TOKEN}` },
+    } as Partial<APIGatewayProxyEvent>) as any);
 
     expect(result).toEqual(TOKEN);
   });
@@ -54,7 +54,7 @@ describe('tokenFromHeaderFactory', () => {
     const CUSTOM_HEADER_NAME = 'auth';
     const getTokenFromHeader = tokenFromHeaderFactory(CUSTOM_HEADER_NAME);
     const result = getTokenFromHeader(({
-      headers: { [CUSTOM_HEADER_NAME]: `Bearer ${TOKEN}` },
+      sanitizedHeaders: { [CUSTOM_HEADER_NAME]: `Bearer ${TOKEN}` },
     } as Partial<APIGatewayProxyEvent>) as any);
 
     expect(result).toEqual(TOKEN);
@@ -63,7 +63,7 @@ describe('tokenFromHeaderFactory', () => {
     const getTokenFromHeader = tokenFromHeaderFactory();
 
     expect(() =>
-      getTokenFromHeader(({ headers: {} } as Partial<APIGatewayProxyEvent>) as any),
+      getTokenFromHeader(({ sanitizedHeaders: {} } as Partial<APIGatewayProxyEvent>) as any),
     ).toThrow(UnauthorizedError);
   });
 });

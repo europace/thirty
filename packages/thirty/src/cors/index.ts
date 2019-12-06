@@ -2,22 +2,104 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { Middleware } from '../core';
 
-/**
- * TODO WIP
- */
-export const cors = <T extends APIGatewayProxyEvent>(): Middleware<T, T> => handler => async (
-  event: T,
-  ...rest
-) => {
+export interface CorsOptions {
+  /**
+   * When true, creates response on OPTIONS request with 'Access-Control-Allow-*'
+   * headers
+   * @default true
+   */
+  preflight?: boolean;
+
+  /**
+   * When true, uses 'Origin' header from request as 'Access-Control-Allow-Origin'
+   * in response
+   * @default '*'
+   */
+  origin?: true | string;
+
+  /**
+   * Specifies value for 'Access-Control-Allow-Credentials' header
+   * @default true
+   */
+  credentials?: boolean;
+
+  /**
+   * Specifies value for 'Access-Control-Allow-Headers' header
+   * When set to true, headers from 'Access-Control-Request-Headers' will be
+   * used
+   * @default ['Content-Type']
+   */
+  headers?: string[] | true;
+
+  /**
+   * Specifies values for 'Access-Control-Allow-Methods' header.
+   * @default ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE']
+   */
+  methods?: string[];
+
+  /**
+   * Specifies values for 'Access-Control-Allow-Max-Age' header.
+   * @default false
+   */
+  maxAge?: number | false;
+}
+
+type EvaluatedCorsOptions = Required<CorsOptions>;
+
+export const defaultCorsOptions: EvaluatedCorsOptions = {
+  preflight: true,
+  origin: '*',
+  credentials: true,
+  headers: ['Content-Type'],
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  maxAge: false,
+};
+
+type CorsRequiredEvent = APIGatewayProxyEvent & {
+  sanitizedHeaders: APIGatewayProxyEvent['headers'];
+};
+
+export const cors = <T extends CorsRequiredEvent>(
+  options: CorsOptions = {},
+): Middleware<T, T> => handler => async (event: T, ...rest) => {
+  const evaluatedOptions = { ...defaultCorsOptions, ...options };
+  if (evaluatedOptions.preflight && event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        ...accessControlAllowOrigin(evaluatedOptions, event),
+        ...accessControlAllowCredentials(evaluatedOptions),
+        ...accessControlAllowHeaders(evaluatedOptions, event),
+        ...accessControlAllowMethods(evaluatedOptions),
+        ...accessControlAllowMaxAge(evaluatedOptions),
+      },
+    };
+  }
   const response = await handler(event, ...rest);
   return {
     ...response,
     headers: {
-      ...{
-        'Access-Control-Allow-Origin': event.headers['origin'],
-        'Access-Control-Allow-Credentials': 'true',
-      },
+      ...accessControlAllowOrigin(evaluatedOptions, event),
+      ...accessControlAllowCredentials(evaluatedOptions),
       ...(response.headers ? response.headers : {}),
     },
   };
 };
+
+const accessControlAllowOrigin = ({ origin }: EvaluatedCorsOptions, event: CorsRequiredEvent) => ({
+  'Access-Control-Allow-Origin': origin === true ? event.sanitizedHeaders['origin'] : origin,
+});
+const accessControlAllowCredentials = ({ credentials }: EvaluatedCorsOptions) => ({
+  'Access-Control-Allow-Credentials': String(credentials),
+});
+const accessControlAllowHeaders = ({ headers }: EvaluatedCorsOptions, event: CorsRequiredEvent) => {
+  const headerStr =
+    headers === true
+      ? event.sanitizedHeaders['access-control-request-headers'] ?? ''
+      : headers.join(',');
+  return headerStr ? { 'Access-Control-Allow-Headers': headerStr } : {};
+};
+const accessControlAllowMethods = ({ methods }: EvaluatedCorsOptions) =>
+  methods.length ? { 'Access-Control-Allow-Methods': methods.join(',') } : {};
+const accessControlAllowMaxAge = ({ maxAge }: EvaluatedCorsOptions) =>
+  maxAge !== false ? { 'Access-Control-Allow-Max-Age': String(maxAge) } : {};

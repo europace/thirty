@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "test": "",
-    "start": "sam local start-api"
+    "start": "sam local start-api",
+    "prettier:write": "prettier --write \"src/**/*.{ts,json}\"",
+    "prettier:check": "prettier --check \"src/**/*.{ts,json}\""
   },
   "author": "",
   "license": "ISC",

@@ -238,24 +238,33 @@ export const handler = compose(
 `thirty/jwtAuth` already provides factory functions to retrieve the token from headers or cookie:
 
 - `tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
-    ```typescript
-    import { tokenFromHeaderFactory } from 'thirty/jwtAuth';
-    
-    {
-        getToken: tokenFromHeaderFactory()
-    }
-    ```
+
+  ```typescript
+  import { tokenFromHeaderFactory } from 'thirty/jwtAuth';
+
+  {
+    getToken: tokenFromHeaderFactory();
+  }
+  ```
 
 - `tokenFromCookieFactory` requires `cookieParser` middleware and expects a key for cookie entry (default is `'authentication'`).
-    ```typescript
-    import { tokenFromCookieFactory } from 'thirty/jwtAuth';
-  
-    {
-        getToken: tokenFromCookieFactory()
-    }
-    ```
+
+  ```typescript
+  import { tokenFromCookieFactory } from 'thirty/jwtAuth';
+
+  {
+    getToken: tokenFromCookieFactory();
+  }
+  ```
+
+**Options API**
+
+- `getToken` - Function that expects the token that should be validated.
+- `getSecretOrPublic` - Secret or public key provider for verifying token.
+- All options that can be passed to [_jsonwebtoken_'s `verify`](https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback)
 
 ### `xsrfCheck`
+
 TODO
 
 ## Routing
