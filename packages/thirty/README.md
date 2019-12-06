@@ -130,7 +130,7 @@ export const handler = compose(
 `cors` is a middleware that creates a preflight response to `OPTIONS` requests and adds CORS headers to any other
 request.
 
-> Requires [`sanitizeHeaders` middleware](#sanitizeHeaders)
+> Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
 
 ```typescript
 import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
@@ -262,6 +262,7 @@ export const handler = compose(
 `thirty/jwtAuth` already provides factory functions to retrieve the token from headers or cookie:
 
 - `tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
+   > Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
 
   ```typescript
   import { tokenFromHeaderFactory } from 'thirty/jwtAuth';
@@ -307,6 +308,8 @@ export const handler = compose(
 ### `xsrfCheck`
 
 `xsrfCheck` is a middleware that checks the XSRF Token provided in the request headers. It uses the [`csrf`](https://github.com/pillarjs/csrf) library.
+
+> Requires [`sanitizeHeaders`](#sanitizeHeaders) middlware
 
 ```typescript
 import { xsrfCheck } from 'thirty/xsrfCheck';
