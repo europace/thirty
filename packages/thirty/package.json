@@ -2,12 +2,19 @@
   "name": "thirty",
   "version": "1.0.0-beta.1",
   "description": "Lightweight extensions that makes AWS Lambda functions easy to develop, testable and type safe.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hypoport/thirty.git",
+    "directory": "packages/thirty"
+  },
+  "homepage": "https://github.com/hypoport/thirty/tree/master/packages/thirty#readme",
   "scripts": {
     "test": "jest",
     "build": "tsc --build tsconfig.build.json",
     "build:clean": "tsc --build tsconfig.build.json --clean",
     "prettier:write": "prettier --write \"src/**/*.{ts,json}\"",
-    "prettier:check": "prettier --check \"src/**/*.{ts,json}\""
+    "prettier:check": "prettier --check \"src/**/*.{ts,json}\"",
+    "prepublishOnly": "npm test && npm run build"
   },
   "jest": {
     "transform": {
@@ -22,8 +29,7 @@
     "router": "^1.3.3"
   },
   "peerDependencies": {
-    "@types/aws-lambda": "^8.10.35",
-    "aws-lambda": "^0.1.2"
+    "@types/aws-lambda": "^8.10.35"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.35",
