@@ -11,10 +11,12 @@ and type safe.
 - [`compose`](#compose)
 - [Middlewares](#middlewares)
   - [`cookieParser`](#cookieParser)
+  - [`cors`](#cors)
   - [`httpErrorHandler`](#httpErrorHandler)
   - [`inject`](#inject)
   - [`jsonParser`](#jsonParser)
   - [`jwtAuth`](#jwtAuth)
+  - [`sanitizeHeaders`](#sanitizeHeaders)
   - [`xsrfCheck`](#xsrfCheck)
 - [Routing](#routing)
 
@@ -122,6 +124,28 @@ export const handler = compose(
   event.cookie;
 });
 ```
+
+### `cors`
+
+`cors` is a middleware that creates a preflight response to `OPTIONS` requests and adds CORS headers to any other
+request.
+
+> Requires [`sanitizeHeaders` middleware](#sanitizeHeaders)
+
+```typescript
+import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
+import { cors } from 'thirty/cors';
+
+export const handler = compose(
+  eventType<APIGatewayProxyEvent>(),
+  sanitizeHeaders(),
+  cors(),
+)(async event => {
+  // ...
+});
+```
+
+#### [`CorsOptions`](src/cors/index.ts)
 
 ### `httpErrorHandler`
 
@@ -263,9 +287,39 @@ export const handler = compose(
 - `getSecretOrPublic` - Secret or public key provider for verifying token.
 - All options that can be passed to [_jsonwebtoken_'s `verify`](https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback)
 
+### `sanitizeHeaders`
+
+`sanitizeHeaders` is a middleware that lower cases all header properties and stores them in a new `event.sanitizedHeaders` object.
+This is necessary because the header properties in `event.headers` aren't consolidated. Which means they are deserialized
+as set in the header request.
+
+```typescript
+import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+  sanitizeHeaders(),
+)(async event => {
+  event.sanitizedHeaders;
+});
+```
+
 ### `xsrfCheck`
 
-TODO
+`xsrfCheck` is a middleware that checks the XSRF Token provided in the request headers. It uses the [`csrf`](https://github.com/pillarjs/csrf) library.
+
+```typescript
+import { xsrfCheck } from 'thirty/xsrfCheck';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+  xsrfCheck({
+    getSecret: ({event}) => secret,
+  }),
+)(async event => {
+  event.sanitizedHeaders;
+});
+```
 
 ## Routing
 
