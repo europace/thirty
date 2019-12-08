@@ -1,8 +1,8 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from '../core';
 import { inject } from '../inject';
-import { routing } from './index';
-import { jsonParser } from '../jsonParser';
+import { createRoutes } from './index';
+import { parseJson } from '../parseJson';
 
 let handler;
 
@@ -25,9 +25,9 @@ beforeEach(() => {
         },
       }),
     }),
-    jsonParser(),
+    parseJson(),
   )(
-    routing(router => {
+    createRoutes(router => {
       router.get('/users', ({ deps }) => {
         return {
           statusCode: 200,

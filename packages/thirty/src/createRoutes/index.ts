@@ -22,7 +22,7 @@ type RouteHandler<T> = { (event: T & RouteEventAdditions): Response };
 type Route<T> = { (path: string | RegExp, handler: RouteHandler<T>) };
 type IRouter<T> = { [P in Method]: Route<T> };
 
-export const routing = <T extends APIGatewayProxyEvent>(
+export const createRoutes = <T extends APIGatewayProxyEvent>(
   applyRoutes: (router: IRouter<T>) => any,
 ): Handler<T> => {
   const router = promisifyMethods(Router());

@@ -1,4 +1,4 @@
-import { jwtAuth, tokenFromCookieFactory, tokenFromHeaderFactory } from './index';
+import { verifyJwt, tokenFromCookieFactory, tokenFromHeaderFactory } from './index';
 import { sign } from 'jsonwebtoken';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from '../core';
@@ -16,7 +16,7 @@ beforeEach(() => {
   spy = createSpy();
   handler = compose(
     eventType<{}>(),
-    jwtAuth({
+    verifyJwt({
       getToken: () => token,
       getSecretOrPublic: () => secret,
     }),

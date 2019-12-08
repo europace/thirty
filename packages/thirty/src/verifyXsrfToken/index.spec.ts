@@ -1,5 +1,5 @@
 import Csrf from 'csrf';
-import { XSRF_HEADER_NAME, xsrfCheck } from './index';
+import { XSRF_HEADER_NAME, verifyXsrfToken } from './index';
 import { compose, eventType } from '../core';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
 import Spy = jasmine.Spy;
@@ -15,7 +15,7 @@ beforeEach(() => {
   spy = createSpy();
   handler = compose(
     eventType<{}>(),
-    xsrfCheck({
+    verifyXsrfToken({
       getSecret: () => secret,
     }),
   )(async () => {

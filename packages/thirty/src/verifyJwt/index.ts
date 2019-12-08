@@ -14,7 +14,7 @@ export interface JwtAuthOptions<T> extends VerifyOptions {
   }) => undefined | string | Promise<string | undefined>;
 }
 
-export const jwtAuth = <T extends APIGatewayProxyEvent>({
+export const verifyJwt = <T extends APIGatewayProxyEvent>({
   getToken,
   getSecretOrPublic,
   ...verifyOptions

@@ -1,8 +1,8 @@
 import { compose, eventType } from 'thirty/core';
-import { httpErrorHandler } from 'thirty/httpErrorHandler';
+import { handleHttpErrors } from 'thirty/handleHttpErrors';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { inject } from 'thirty/inject';
-import { cors } from 'thirty/cors';
+import { handleCors } from 'thirty/handleCors';
 import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
 
 export const handler = compose(
@@ -11,8 +11,8 @@ export const handler = compose(
     logger: () => console
   }),
   sanitizeHeaders(),
-  cors(),
-  httpErrorHandler(),
+  handleCors(),
+  handleHttpErrors(),
 )(async event => {
   const {logger} = event.deps;
   logger.info();

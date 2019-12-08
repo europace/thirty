@@ -58,7 +58,7 @@ export const defaultCorsOptions: EvaluatedCorsOptions = {
 
 type CorsRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
 
-export const cors = <T extends CorsRequiredEvent>(
+export const handleCors = <T extends CorsRequiredEvent>(
   options: CorsOptions = {},
 ): Middleware<T, T> => handler => async (event: T, ...rest) => {
   const evaluatedOptions = { ...defaultCorsOptions, ...options };

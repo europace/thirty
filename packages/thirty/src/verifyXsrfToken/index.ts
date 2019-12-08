@@ -11,8 +11,8 @@ type XsrfCheckOptions<T> = {
   getSecret: (props: { event: T }) => undefined | string | Promise<string | undefined>;
   headerName?: string;
 };
-type XsrfCheckRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
-export const xsrfCheck = <T extends XsrfCheckRequiredEvent>({
+type XsrfVerificationRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
+export const verifyXsrfToken = <T extends XsrfVerificationRequiredEvent>({
   getSecret,
   headerName,
 }: XsrfCheckOptions<T>): Middleware<T, T> => handler => {

@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { Middleware } from '../core';
 
-export const httpErrorHandler = <T extends APIGatewayProxyEvent>(): Middleware<
+export const handleHttpErrors = <T extends APIGatewayProxyEvent>(): Middleware<
   T,
   T
 > => handler => async (event, ...args) =>

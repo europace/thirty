@@ -3,7 +3,7 @@ import { APIGatewayEvent } from 'aws-lambda';
 
 import { Middleware } from '../core';
 
-export const cookieParser = <T extends APIGatewayEvent>(): Middleware<
+export const parseCookie = <T extends APIGatewayEvent>(): Middleware<
   T,
   T & { cookie: object }
 > => handler => (event: T, ...args) =>

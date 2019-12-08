@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from '../core';
-import { jsonParser } from './index';
+import { parseJson } from './index';
 
 let handler;
 const body = { name: 'bob', age: 12 };
@@ -8,13 +8,13 @@ const body = { name: 'bob', age: 12 };
 beforeAll(() => {
   handler = compose(
     eventType<APIGatewayProxyEvent>(),
-    jsonParser(),
+    parseJson(),
   )(async event => {
     return event.jsonBody;
   });
 });
 
-it('should return jsonParser body', async () => {
+it('should return parseJson body', async () => {
   const jsonBody = await handler({ body: JSON.stringify(body) });
   expect(jsonBody).toEqual(body);
 });

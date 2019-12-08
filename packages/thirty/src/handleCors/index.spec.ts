@@ -1,5 +1,5 @@
 import { compose, eventType } from '../core';
-import { cors } from './index';
+import { handleCors } from './index';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { sanitizeHeaders } from '../sanitizeHeaders';
 
@@ -9,7 +9,7 @@ beforeAll(() => {
   handler = compose(
     eventType<APIGatewayProxyEvent>(),
     sanitizeHeaders(),
-    cors(),
+    handleCors(),
   )(async event => {
     return {
       statusCode: 200,
@@ -33,7 +33,7 @@ it('should return preflight headers on OPTIONS request', async () => {
   });
 });
 
-it('should add cors headers on any other request', async () => {
+it('should add handleCors headers on any other request', async () => {
   const response = await handler({ httpMethod: 'GET' });
   expect(response).toEqual({
     headers: {
@@ -50,7 +50,7 @@ describe('preflight', () => {
     handler = compose(
       eventType<APIGatewayProxyEvent>(),
       sanitizeHeaders(),
-      cors({ preflight: false }),
+      handleCors({ preflight: false }),
     )(async event => {
       return {
         statusCode: 200,

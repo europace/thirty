@@ -10,14 +10,14 @@ and type safe.
 - [Testing](#testing)
 - [`compose`](#compose)
 - [Middlewares](#middlewares)
-  - [`cookieParser`](#cookieParser)
-  - [`cors`](#cors)
-  - [`httpErrorHandler`](#httpErrorHandler)
+  - [`handleCors`](#handlecors)
+  - [`handleHttpErrors`](#handlehttperrors)
   - [`inject`](#inject)
-  - [`jsonParser`](#jsonParser)
-  - [`jwtAuth`](#jwtAuth)
-  - [`sanitizeHeaders`](#sanitizeHeaders)
-  - [`xsrfCheck`](#xsrfCheck)
+  - [`parseCookie`](#parsecookie)
+  - [`parseJson`](#parsejson)
+  - [`sanitizeHeaders`](#sanitizeheaders)
+  - [`verifyJwt`](#verifyjwt)
+  - [`verifyXsrfToken`](#verifyxsrftoken)
 - [Routing](#routing)
 
 ## Install
@@ -32,9 +32,9 @@ npm install thirty
 // handler.ts
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from 'thirty/core';
-import { json } from 'thirty/jsonParser';
-import { jwtAuth, tokenFromHeaderFactory } from 'thirty/jwtAuth';
-import { errorHandler } from 'thirty/httpErrorHandler';
+import { parseJson } from 'thirty/parseJson';
+import { verifyJwt, tokenFromHeaderFactory } from 'thirty/verifyJwt';
+import { handleHttpErrors } from 'thirty/handleHttpErrors';
 import { inject } from 'thirty/inject';
 
 export const handler = compose(
@@ -43,9 +43,9 @@ export const handler = compose(
     authService: authServiceFactory,
     userService: userServiceFactory,
   }),
-  errorHandler(),
-  json(),
-  jwtAuth({
+  handleHttpErrors(),
+  parseJson(),
+  verifyJwt({
     getToken: tokenFromHeaderFactory(),
     getSecretOrPublic: ({ deps }) => deps.authService.getSecret(),
   }),
@@ -110,54 +110,39 @@ handler.actual === actual; // true
 
 ## Middlewares
 
-### `cookieParser`
+### `handleCors`
 
-`cookieParser` is a middleware that parses the event cookie header and extends the event object by a cookie object:
-
-```typescript
-import { cookieParser } from 'thirty/cookieParser';
-
-export const handler = compose(
-  eventType<{ someType: string }>(),
-  cookieParser(),
-)(async event => {
-  event.cookie;
-});
-```
-
-### `cors`
-
-`cors` is a middleware that creates a preflight response to `OPTIONS` requests and adds CORS headers to any other
+`handleCors` is a middleware that creates a preflight response to `OPTIONS` requests and adds CORS headers to any other
 request.
 
 > Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
 
 ```typescript
 import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
-import { cors } from 'thirty/cors';
+import { handleCors } from 'thirty/handleCors';
 
 export const handler = compose(
   eventType<APIGatewayProxyEvent>(),
   sanitizeHeaders(),
-  cors(),
+  handleCors(),
 )(async event => {
   // ...
 });
 ```
 
-#### [`CorsOptions`](src/cors/index.ts)
+#### [`CorsOptions`](src/handleCors/index.ts)
 
-### `httpErrorHandler`
+### `handleHttpErrors`
 
-`httpErrorHandler` is a middleware that wraps the actual handler, catches all errors and creates an error response:
+`handleHttpErrors` is a middleware that wraps the actual handler, catches all errors and creates an error response:
 
 ```typescript
-import { httpErrorHandler } from 'thirty/httpErrorHandler';
+import { handleHttpErrors } from 'thirty/handleHttpErrors';
 import { BadRequestError } from 'thirty/errors';
 
 export const handler = compose(
   eventType<{ someType: string }>(),
-  httpErrorHandler(),
+  handleHttpErrors(),
 )(async event => {
   throw new BadRequestError('Parameter x missing');
 });
@@ -225,68 +210,35 @@ it('should return created user', async () => {
 });
 ```
 
-### `jsonParser`
+### `parseCookie`
 
-`jsonParser` is a middleware that parses the event body and extends the event object by a `jsonBody` object:
+`parseCookie` is a middleware that parses the event cookie header and extends the event object by a cookie object:
 
 ```typescript
-import { cookieParser } from 'thirty/cookieParser';
+import { parseCookie } from 'thirty/parseCookie';
 
 export const handler = compose(
   eventType<{ someType: string }>(),
-  jsonParser(),
+  parseCookie(),
+)(async event => {
+  event.cookie;
+});
+```
+
+### `parseJson`
+
+`parseJson` is a middleware that parses the event body and extends the event object by a `jsonBody` object:
+
+```typescript
+import { parseCookie } from 'thirty/parseCookie';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+  parseJson(),
 )(async event => {
   event.jsonBody;
 });
 ```
-
-### `jwtAuth`
-
-`jwtAuth` is a authentication middleware, which extends the event object by a `user` object and throws an
-`UnauthorizedError` if the client is not authorized. Under the hood it uses the `jsonwebtoken` library.
-
-```typescript
-import { jwtAuth } from 'thirty/jwtAuth';
-
-export const handler = compose(
-  eventType<{ someType: string }>(),
-  jwtAuth({
-    getToken: event => event.headers.Authorization.split(' ')[1],
-    getSecretOrPublic: ({ deps, event, decodedJwt }) => someSecretOrPublic,
-  }),
-)(async event => {
-  event.jsonBody;
-});
-```
-
-`thirty/jwtAuth` already provides factory functions to retrieve the token from headers or cookie:
-
-- `tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
-   > Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
-
-  ```typescript
-  import { tokenFromHeaderFactory } from 'thirty/jwtAuth';
-
-  {
-    getToken: tokenFromHeaderFactory();
-  }
-  ```
-
-- `tokenFromCookieFactory` requires `cookieParser` middleware and expects a key for cookie entry (default is `'authentication'`).
-
-  ```typescript
-  import { tokenFromCookieFactory } from 'thirty/jwtAuth';
-
-  {
-    getToken: tokenFromCookieFactory();
-  }
-  ```
-
-**Options API**
-
-- `getToken` - Function that expects the token that should be validated.
-- `getSecretOrPublic` - Secret or public key provider for verifying token.
-- All options that can be passed to [_jsonwebtoken_'s `verify`](https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback)
 
 ### `sanitizeHeaders`
 
@@ -305,18 +257,66 @@ export const handler = compose(
 });
 ```
 
-### `xsrfCheck`
+### `verifyJwt`
 
-`xsrfCheck` is a middleware that checks the XSRF Token provided in the request headers. It uses the [`csrf`](https://github.com/pillarjs/csrf) library.
+`verifyJwt` is a authentication middleware, which extends the event object by a `user` object and throws an
+`UnauthorizedError` if the client is not authorized. Under the hood it uses the `jsonwebtoken` library.
+
+```typescript
+import { verifyJwt } from 'thirty/verifyJwt';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+  verifyJwt({
+    getToken: event => event.headers.Authorization.split(' ')[1],
+    getSecretOrPublic: ({ deps, event, decodedJwt }) => someSecretOrPublic,
+  }),
+)(async event => {
+  event.jsonBody;
+});
+```
+
+`thirty/verifyJwt` already provides factory functions to retrieve the token from headers or cookie:
+
+- `tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
+   > Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
+
+  ```typescript
+  import { tokenFromHeaderFactory } from 'thirty/verifyJwt';
+
+  {
+    getToken: tokenFromHeaderFactory();
+  }
+  ```
+
+- `tokenFromCookieFactory` requires `parseCookie` middleware and expects a key for cookie entry (default is `'authentication'`).
+
+  ```typescript
+  import { tokenFromCookieFactory } from 'thirty/verifyJwt';
+
+  {
+    getToken: tokenFromCookieFactory();
+  }
+  ```
+
+**Options API**
+
+- `getToken` - Function that expects the token that should be validated.
+- `getSecretOrPublic` - Secret or public key provider for verifying token.
+- All options that can be passed to [_jsonwebtoken_'s `verify`](https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback)
+
+### `verifyXsrfToken`
+
+`verifyXsrfToken` is a middleware that checks the XSRF Token provided in the request headers. It uses the [`csrf`](https://github.com/pillarjs/csrf) library.
 
 > Requires [`sanitizeHeaders`](#sanitizeHeaders) middlware
 
 ```typescript
-import { xsrfCheck } from 'thirty/xsrfCheck';
+import { verifyXsrfToken } from 'thirty/verifyXsrfToken';
 
 export const handler = compose(
   eventType<{ someType: string }>(),
-  xsrfCheck({
+  verifyXsrfToken({
     getSecret: ({event}) => secret,
   }),
 )(async event => {
@@ -329,7 +329,7 @@ export const handler = compose(
 `routing` is a wrapper for the actual handler function to define multiple routes and their corresponding handlers:
 
 ```typescript
-import { routing } from 'thirty/routing';
+import { createRoutes } from 'thirty/createRoutes';
 
 export const handler = compose(
   eventType<APIGatewayProxyEvent>(),
@@ -338,9 +338,9 @@ export const handler = compose(
       /*...*/
     }),
   }),
-  jsonParser(),
+  parseJson(),
 )(
-  routing(router => {
+  createRoutes(router => {
     router.get('/users', ({ deps }) => {
       return {
         statusCode: 200,
