@@ -12,10 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-lambda": "^0.1.2",
-    "thirty": "^1.0.0-beta.0"
-  },
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.35"
+    "thirty": "^1.0.0-beta.3"
   }
 }

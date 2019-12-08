@@ -3,15 +3,16 @@ import { decode, verify, VerifyOptions } from 'jsonwebtoken';
 
 import { Middleware } from '../core';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
+import { SanitizedHeadersEvent } from '../sanitizeHeaders';
 
-type JwtAuthOptions<T> = {
+export interface JwtAuthOptions<T> extends VerifyOptions {
   getToken: (event: T) => undefined | string | Promise<string | undefined>;
   getSecretOrPublic: (props: {
     token: string;
     event: T;
     decodedJwt: any;
   }) => undefined | string | Promise<string | undefined>;
-} & VerifyOptions;
+}
 
 export const jwtAuth = <T extends APIGatewayProxyEvent>({
   getToken,
@@ -44,9 +45,7 @@ export const getDecoded = token => {
   return decoded;
 };
 
-type TokenFromHeaderRequiredEvent = APIGatewayProxyEvent & {
-  sanitizedHeaders: APIGatewayProxyEvent['headers'];
-};
+type TokenFromHeaderRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
 export const tokenFromHeaderFactory = <T extends TokenFromHeaderRequiredEvent>(
   headerName = 'authorization',
 ) => (event: T) => {

@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { Middleware } from '../core';
+import { SanitizedHeadersEvent } from '../sanitizeHeaders';
 
 export interface CorsOptions {
   /**
@@ -55,9 +56,7 @@ export const defaultCorsOptions: EvaluatedCorsOptions = {
   maxAge: false,
 };
 
-type CorsRequiredEvent = APIGatewayProxyEvent & {
-  sanitizedHeaders: APIGatewayProxyEvent['headers'];
-};
+type CorsRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
 
 export const cors = <T extends CorsRequiredEvent>(
   options: CorsOptions = {},

@@ -1,9 +1,13 @@
-import { APIGatewayEvent, APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import { Middleware } from '../core';
 
-export const sanitizeHeaders = <T extends APIGatewayEvent>(): Middleware<
+export interface SanitizedHeadersEvent {
+  sanitizedHeaders: { [name: string]: string };
+}
+
+export const sanitizeHeaders = <T extends APIGatewayProxyEvent>(): Middleware<
   T,
-  T & { sanitizedHeaders: APIGatewayEvent['headers'] }
+  T & SanitizedHeadersEvent
 > => handler => (event, ...args) =>
   handler({ ...event, sanitizedHeaders: event.headers ? sanitize(event.headers) : {} }, ...args);
 
@@ -14,6 +18,6 @@ export const sanitize = (headers: object | null | undefined) => {
       ...sanitizedHeaders,
       [headerName.toLowerCase()]: safeHeaders[headerName],
     }),
-    {} as APIGatewayProxyEvent['headers'],
+    {} as SanitizedHeadersEvent['sanitizedHeaders'],
   );
 };

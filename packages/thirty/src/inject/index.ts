@@ -6,7 +6,7 @@ export type DepsOf<T extends DepsFactories<DepsOf<T>>> = {
   [P in keyof T]: ReturnType<T[P]>;
 };
 
-export const inject = <T, D extends DepsFactories<DepsOf<D>>>(
+export const inject = <T extends object, D extends DepsFactories<DepsOf<D>>>(
   depsFactories: D,
 ): Middleware<T, Deps<DepsOf<D>> & T> => handler => {
   let cachedDeps;

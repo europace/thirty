@@ -1,12 +1,13 @@
 {
   "name": "thirty",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Lightweight extensions that makes AWS Lambda functions easy to develop, testable and type safe.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hypoport/thirty.git",
     "directory": "packages/thirty"
   },
+  "main": "index.js",
   "homepage": "https://github.com/hypoport/thirty/tree/master/packages/thirty#readme",
   "scripts": {
     "test": "jest",
@@ -32,8 +33,6 @@
     "@types/aws-lambda": "^8.10.35"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.35",
-    "aws-lambda": "^0.1.2",
     "cookie": "^0.4.0",
     "csrf": "^3.1.0",
     "jsonwebtoken": "^8.5.1",

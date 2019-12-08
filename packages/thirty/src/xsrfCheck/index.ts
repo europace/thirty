@@ -3,6 +3,7 @@ import Csrf from 'csrf';
 
 import { Middleware } from '../core';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
+import { SanitizedHeadersEvent } from '../sanitizeHeaders';
 
 export const XSRF_HEADER_NAME = 'x-xsrf-token';
 
@@ -10,9 +11,7 @@ type XsrfCheckOptions<T> = {
   getSecret: (props: { event: T }) => undefined | string | Promise<string | undefined>;
   headerName?: string;
 };
-type XsrfCheckRequiredEvent = APIGatewayProxyEvent & {
-  sanitizedHeaders: APIGatewayProxyEvent['headers'];
-};
+type XsrfCheckRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
 export const xsrfCheck = <T extends XsrfCheckRequiredEvent>({
   getSecret,
   headerName,
