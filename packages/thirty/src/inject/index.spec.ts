@@ -1,9 +1,13 @@
 import { compose, eventType } from '../core';
-import { inject } from './index';
+import { inject, WithInject } from './index';
 
 let handler;
+
+type Deps = {cService; aService: {a};} & WithInject;
+
 const aService = jest.fn().mockImplementation(deps => ({ a: 'a', test: () => deps.bService.b }));
-const bService = jest.fn().mockImplementation(deps => ({ b: 'b', test: () => deps.aService.a }));
+const bService = jest.fn().mockImplementation(({cService, inject}: Deps) => ({ b: 'b', test: () => cService.c + inject('aService').a }));
+const cService = jest.fn().mockImplementation(({aService}) => ({ c: 'c', test: () => aService.a }));
 
 beforeAll(() => {
   handler = compose(
@@ -11,19 +15,21 @@ beforeAll(() => {
     inject({
       aService,
       bService,
+      cService,
     }),
   )(async event => {
-    const { aService, bService } = event.deps;
+    const { aService, bService, cService } = event.deps;
     return {
       fromA: aService.test(),
       fromB: bService.test(),
+      fromC: cService.test(),
     };
   });
 });
 
 it('should inject and return services', async () => {
   const result = await handler({});
-  const expectedResult = { fromA: 'b', fromB: 'a' };
+  const expectedResult = { fromA: 'b', fromB: 'ca', fromC: 'a' };
 
   expect(result).toEqual(expectedResult);
 });
