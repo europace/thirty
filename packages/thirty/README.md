@@ -272,7 +272,7 @@ export const handler = compose(
     getSecretOrPublic: ({ deps, event, decodedJwt }) => someSecretOrPublic,
   }),
 )(async event => {
-  event.jsonBody;
+  event.user;
 });
 ```
 
@@ -320,7 +320,7 @@ export const handler = compose(
     getSecret: ({event}) => secret,
   }),
 )(async event => {
-  event.sanitizedHeaders;
+  // ...
 });
 ```
 
