@@ -188,9 +188,9 @@ Each factory gets a reference to the created dependency container:
 export type AuthServiceDeps = { userService: UserService };
 export type AuthService = ReturnType<typeof authServiceFactory>;
 
-export const authServiceFactory = (deps: AuthServiceDeps) => ({
+export const authServiceFactory = ({userService}: AuthServiceDeps) => ({
   authenticate() {
-    const user = deps.userService.getUser();
+    const user = userService.getUser();
     // ...
   },
 });
