@@ -1,9 +1,9 @@
 import { compose, eventType } from '../core';
-import { inject, WithInject } from './index';
+import { inject, Injector } from './index';
 
 let handler;
 
-type Deps = {cService; aService: {a};} & WithInject;
+type Deps = {cService; aService: {a};} & Injector;
 
 const aService = jest.fn().mockImplementation(deps => ({ a: 'a', test: () => deps.bService.b }));
 const bService = jest.fn().mockImplementation(({cService, inject}: Deps) => ({ b: 'b', test: () => cService.c + inject('aService').a }));

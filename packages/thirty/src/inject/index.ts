@@ -5,7 +5,7 @@ export type DepsFactories<T> = { [props: string]: (deps: T) => any };
 export type DepsOf<T extends DepsFactories<DepsOf<T>>> = {
   [P in keyof T]: ReturnType<T[P]>;
 };
-export interface WithInject {
+export interface Injector {
   inject: <K extends keyof this>(id: K) => this[K];
 }
 
@@ -41,4 +41,4 @@ export const createContainer = factories => {
   return container;
 };
 
-export const withInject = deps => ({...deps, inject: id => deps[id]})
+export const withInject = deps => ({...deps, inject: id => deps[id]});
