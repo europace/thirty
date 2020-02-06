@@ -24,7 +24,9 @@ beforeEach(() => {
 });
 
 it('should resolve due to valid XSRF token', async () => {
-  await expect(handler({ sanitizedHeaders: { [XSRF_HEADER_NAME]: token } })).resolves.toEqual(undefined);
+  await expect(handler({ sanitizedHeaders: { [XSRF_HEADER_NAME]: token } })).resolves.toEqual(
+    undefined,
+  );
   expect(spy).toHaveBeenCalled();
 });
 

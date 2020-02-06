@@ -5,6 +5,7 @@ export type DepsFactories<T> = { [props: string]: (deps: T) => any };
 export type DepsOf<T extends DepsFactories<DepsOf<T>>> = {
   [P in keyof T]: ReturnType<T[P]>;
 };
+
 export interface Injector {
   inject: <K extends keyof this>(id: K) => this[K];
 }
@@ -25,20 +26,25 @@ export const createContainer = factories => {
   const cache = {};
   const circularDepIndicator = {};
   const inject = id => container[id];
+  let depChainKeys: string[] = [];
   const container = new Proxy(factories, {
     get(target, key) {
-      if(key === 'inject') return inject;
-      if (!cache[key]) {
+      if (key === 'inject') return inject;
+      if (!(key in cache)) {
+        depChainKeys.push(String(key));
         if (circularDepIndicator[key]) {
-          throw new Error(`Circular dependency detected -> "${String(key)}"`);
+          throw new Error(
+            `Circular dependency detected ${depChainKeys.map(key => `"${key}"`).join(' -> ')}`,
+          );
         }
         circularDepIndicator[key] = true;
         cache[key] = factories[key](container);
+        depChainKeys = [];
       }
       return cache[key];
-    }
+    },
   });
   return container;
 };
 
-export const withInject = deps => ({...deps, inject: id => deps[id]});
+export const withInject = deps => ({ ...deps, inject: id => deps[id] });
