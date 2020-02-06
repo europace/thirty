@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { Middleware } from '../core';
 
-interface HttpErrorHandlerOptions {
+export interface HttpErrorHandlerOptions {
   logError?: (message: any) => any;
   logger?: { error: (message: any) => any };
   /**

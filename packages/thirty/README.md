@@ -11,10 +11,10 @@ and type safe.
 - [`compose`](#compose)
 - [Middlewares](#middlewares)
   - [`handleCors`](#handlecors)
-  - [`handleHttpErrors`](#handlehttperrors)
   - [`inject`](#inject)
   - [`parseCookie`](#parsecookie)
   - [`parseJson`](#parsejson)
+  - [`handleHttpErrors`](#handlehttperrors)
   - [`sanitizeHeaders`](#sanitizeheaders)
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
@@ -132,22 +132,6 @@ export const handler = compose(
 
 #### [`CorsOptions`](src/handleCors/index.ts)
 
-### `handleHttpErrors`
-
-`handleHttpErrors` is a middleware that wraps the actual handler, catches all errors and creates an error response:
-
-```typescript
-import { handleHttpErrors } from 'thirty/handleHttpErrors';
-import { BadRequestError } from 'thirty/errors';
-
-export const handler = compose(
-  eventType<{ someType: string }>(),
-  handleHttpErrors(),
-)(async event => {
-  throw new BadRequestError('Parameter x missing');
-});
-```
-
 The above example would create an error response that would look like:
 
 ```json
@@ -159,6 +143,8 @@ The above example would create an error response that would look like:
   "body": "{\"error\":\"Parameter x missing\"}"
 }
 ```
+
+
 
 ### `inject`
 
@@ -239,6 +225,27 @@ export const handler = compose(
   event.jsonBody;
 });
 ```
+
+### `registerHttpErrorHandler`
+
+`registerHttpErrorHandler` is a middleware that wraps the actual handler, catches all errors and creates an error response:
+
+```typescript
+import { registerHttpErrorHandler } from 'thirty/registerHttpErrorHandler';
+import { BadRequestError } from 'thirty/errors';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+  registerHttpErrorHandler({
+    logger: console,
+    backlist: [{statusCode: 401, message: 'Alternative message'}]
+  }),
+)(async event => {
+  throw new BadRequestError('Parameter x missing');
+});
+```
+
+#### [`HttpErrorHandlerOptions`](src/registerHttpErrorHandler/index.ts)
 
 ### `sanitizeHeaders`
 
