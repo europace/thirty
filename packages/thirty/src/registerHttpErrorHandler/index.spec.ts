@@ -36,7 +36,7 @@ describe('simple setup', () => {
 
   it('should return InternalServerError, since unknown errors are obfuscated by default', async () => {
     throwError.mockImplementation(() => {
-      throw new Error();
+      throw new Error('Test');
     });
     const response = await handler({});
 
@@ -112,7 +112,7 @@ describe('blacklist', () => {
     handler = compose(
       eventType<{}>(),
       registerHttpErrorHandler({
-        blacklist: [{ message: 'Error', statusCode: 405 }],
+        blacklist: [{ alternativeMessage: 'Error', statusCode: 405 }],
       }),
     )(async event => {
       throwError();
@@ -173,12 +173,12 @@ describe('logger', () => {
   });
 
   it('should call logger.error with original message', async () => {
-    const errorMessage = 'Something went wrong';
+    const error = new Error('Something went wrong');
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(errorMessage));
+      throw error;
     });
     await handler({});
-    expect(logError).toHaveBeenCalledWith(errorMessage);
+    expect(logError).toHaveBeenCalledWith(error);
   });
 });
 
@@ -201,11 +201,11 @@ describe('logError', () => {
   });
 
   it('should call logError with original message', async () => {
-    const errorMessage = 'Something went wrong';
+    const error = new Error('Something went wrong');
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(errorMessage));
+      throw error;
     });
     await handler({});
-    expect(logError).toHaveBeenCalledWith(errorMessage);
+    expect(logError).toHaveBeenCalledWith(error);
   });
 });
