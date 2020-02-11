@@ -1,6 +1,6 @@
 # thirty-example
 
-## Perquisites
+## Prerequisites
 
 - Node.js - Download & install Node.js and the npm package manager. 
 - AWS Account - An AWS account is required
