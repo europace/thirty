@@ -1,6 +1,56 @@
 import { Middleware } from './Middleware';
 import { Handler } from './Handler';
 
+export function compose<A, B, C, D, E, F, G, H, J, K, L, M, N>(
+  f: Middleware<A, B>,
+  g: Middleware<B, C>,
+  h: Middleware<C, D>,
+  i: Middleware<D, E>,
+  j: Middleware<E, F>,
+  k: Middleware<F, G>,
+  l: Middleware<G, H>,
+  m: Middleware<H, J>,
+  n: Middleware<J, K>,
+  o: Middleware<K, L>,
+  p: Middleware<L, M>,
+  q: Middleware<M, N>,
+): Middleware<A, N, { actual: Handler<N> }>;
+export function compose<A, B, C, D, E, F, G, H, J, K, L, M>(
+  f: Middleware<A, B>,
+  g: Middleware<B, C>,
+  h: Middleware<C, D>,
+  i: Middleware<D, E>,
+  j: Middleware<E, F>,
+  k: Middleware<F, G>,
+  l: Middleware<G, H>,
+  m: Middleware<H, J>,
+  n: Middleware<J, K>,
+  o: Middleware<K, L>,
+  p: Middleware<L, M>,
+): Middleware<A, M, { actual: Handler<M> }>;
+export function compose<A, B, C, D, E, F, G, H, J, K, L>(
+  f: Middleware<A, B>,
+  g: Middleware<B, C>,
+  h: Middleware<C, D>,
+  i: Middleware<D, E>,
+  j: Middleware<E, F>,
+  k: Middleware<F, G>,
+  l: Middleware<G, H>,
+  m: Middleware<H, J>,
+  n: Middleware<J, K>,
+  o: Middleware<K, L>,
+): Middleware<A, L, { actual: Handler<L> }>;
+export function compose<A, B, C, D, E, F, G, H, J, K>(
+  f: Middleware<A, B>,
+  g: Middleware<B, C>,
+  h: Middleware<C, D>,
+  i: Middleware<D, E>,
+  j: Middleware<E, F>,
+  k: Middleware<F, G>,
+  l: Middleware<G, H>,
+  m: Middleware<H, J>,
+  n: Middleware<J, K>,
+): Middleware<A, K, { actual: Handler<K> }>;
 export function compose<A, B, C, D, E, F, G, H, J>(
   f: Middleware<A, B>,
   g: Middleware<B, C>,
