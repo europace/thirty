@@ -82,3 +82,19 @@ it('should throw error due to circular dependency', async () => {
     new Error('Circular dependency detected "bService" -> "aService" -> "bService"'),
   );
 });
+
+it('should pass other handler arguments properly', async () => {
+  const arg1 = 1;
+  const arg2 = 2;
+  const _handler = compose(
+    eventType<{}>(),
+    inject({}),
+  )(async (...args: any[]) => {
+    return args;
+  });
+
+  await expect(_handler(arg1, arg2)).resolves.toEqual([
+    arg1,
+    arg2
+  ]);
+});

@@ -1,1 +1,1 @@
-export type Handler<EventType> = (event: EventType) => Promise<any>;
+export type Handler<EventType> = (event: EventType, ...args: any[]) => Promise<any>;

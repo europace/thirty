@@ -18,7 +18,7 @@ export const inject = <T extends object, D extends DepsFactories<DepsOf<D>>>(
     if (!container) {
       container = createContainer(depsFactories);
     }
-    return handler(Object.assign(event, { deps: container }, ...args));
+    return handler(Object.assign(event, { deps: container }), ...args);
   };
 };
 
