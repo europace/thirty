@@ -98,3 +98,14 @@ it('should pass other handler arguments properly', async () => {
     arg2
   ]);
 });
+
+
+it('should handle access on properties that are not defined on dependency factory', async () => {
+  const _handler = compose(
+    eventType<{}>(),
+    inject({
+      value: () => '',
+    }),
+  )(async event => event.deps['undefinedDependency']);
+  await expect(_handler({})).resolves.toBeUndefined();
+});

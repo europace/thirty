@@ -30,7 +30,7 @@ export const createContainer = factories => {
   const container = new Proxy(factories, {
     get(target, key) {
       if (key === 'inject') return inject;
-      if (!(key in cache)) {
+      if (!(key in cache) && (key in factories)) {
         depChainKeys.push(String(key));
         if (circularDepIndicator[key]) {
           throw new Error(
