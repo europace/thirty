@@ -12,6 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "thirty": "^1.0.0-beta.3"
+    "thirty": "^1.0.0-beta.8"
   }
 }
