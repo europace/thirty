@@ -9,7 +9,7 @@ export const sanitizeHeaders = <T extends APIGatewayProxyEvent>(): Middleware<
   T,
   T & SanitizedHeadersEvent
 > => handler => (event, ...args) =>
-  handler({ ...event, sanitizedHeaders: event.headers ? sanitize(event.headers) : {} }, ...args);
+  handler(Object.assign(event, { sanitizedHeaders: event.headers ? sanitize(event.headers) : {} }), ...args);
 
 export const sanitize = (headers: object | null | undefined) => {
   const safeHeaders = headers ? headers : {};

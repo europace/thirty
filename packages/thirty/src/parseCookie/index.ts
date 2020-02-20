@@ -7,4 +7,7 @@ export const parseCookie = <T extends APIGatewayEvent>(): Middleware<
   T,
   T & { cookie: object }
 > => handler => (event: T, ...args) =>
-  handler({ ...event, cookie: event.headers?.Cookie ? parse(event.headers.Cookie) : {} }, ...args);
+  handler(
+    Object.assign(event, { cookie: event.headers?.Cookie ? parse(event.headers.Cookie) : {} }),
+    ...args,
+  );

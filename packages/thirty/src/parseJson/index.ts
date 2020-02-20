@@ -6,4 +6,4 @@ export const parseJson = <T extends APIGatewayEvent>(): Middleware<
   T,
   T & { jsonBody: object }
 > => handler => (event, ...args) =>
-  handler({ ...event, jsonBody: event.body ? JSON.parse(event.body) : {} }, ...args);
+  handler(Object.assign(event, { jsonBody: event.body ? JSON.parse(event.body) : {} }), ...args);
