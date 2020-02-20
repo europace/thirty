@@ -1,6 +1,8 @@
 import { compose, eventType } from '../core';
 
 import { registerHttpErrorHandler } from './index';
+import { inject } from '../inject';
+import { APIGatewayEvent } from 'aws-lambda';
 
 describe('simple setup', () => {
   let handler;
@@ -154,7 +156,36 @@ describe('blacklist', () => {
   });
 });
 
-describe('logger', () => {
+describe('event.deps.logger', () => {
+  let handler;
+  let throwError: jest.Mock;
+  let logError: jest.Mock;
+
+  beforeAll(() => {
+    throwError = jest.fn();
+    logError = jest.fn();
+    handler = compose(
+      eventType<APIGatewayEvent>(),
+      inject({
+        logger: () => ({ error: logError }),
+      }),
+      registerHttpErrorHandler(),
+    )(async event => {
+      throwError();
+    });
+  });
+
+  it('should call logger.error with original message', async () => {
+    const error = new Error('Something went wrong');
+    throwError.mockImplementation(() => {
+      throw error;
+    });
+    await handler({});
+    expect(logError).toHaveBeenCalledWith(error);
+  });
+});
+
+describe('options.logger', () => {
   let handler;
   let throwError: jest.Mock;
   let logError: jest.Mock;
@@ -182,7 +213,7 @@ describe('logger', () => {
   });
 });
 
-describe('logError', () => {
+describe('options.logError', () => {
   let handler;
   let throwError: jest.Mock;
   let logError: jest.Mock;
