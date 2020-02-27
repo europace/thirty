@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
 import { Middleware } from '../core';
+import { BaseError } from '../errors';
 
 export type BacklistItem = {
   alternativeMessage: string;
@@ -10,6 +11,7 @@ export type BacklistItem = {
 
 interface ErrorLogger {
   error(...args: any[]): any;
+
   [log: string]: any;
 }
 
@@ -26,7 +28,12 @@ export interface HttpErrorHandlerOptions {
    *  ]
    */
   blacklist?: BacklistItem[];
+  safeBaseError?: any;
 }
+
+type ResolvedHttpErrorHandlerOptions = Required<
+  Pick<HttpErrorHandlerOptions, 'blacklist' | 'safeBaseError'>
+>;
 
 const unknownError = {
   statusCode: undefined,
@@ -37,26 +44,23 @@ const internalServerError = { statusCode: 500, alternativeMessage: 'InternalServ
 const forbiddenError = { statusCode: 403, alternativeMessage: 'Forbidden' };
 const unauthorirzedError = { statusCode: 401, alternativeMessage: 'Unauthorized' };
 
-type HttpErrorHandlerRequiredEvents = APIGatewayProxyEvent & ({ deps?: { logger?: ErrorLogger } });
+const defaultOptions: ResolvedHttpErrorHandlerOptions = {
+  blacklist: [internalServerError, forbiddenError, unauthorirzedError, unknownError],
+  safeBaseError: BaseError,
+};
+
+type HttpErrorHandlerRequiredEvents = APIGatewayProxyEvent & { deps?: { logger?: ErrorLogger } };
 
 export const registerHttpErrorHandler = <T extends HttpErrorHandlerRequiredEvents>(
   options: HttpErrorHandlerOptions = {},
 ): Middleware<T, T> => handler => async (event, ...args) =>
   handler(event, ...args).catch(err => {
-    const logger = event.deps?.logger ?? options.logger;
-    const logError = logger
-      ? (...args: any[]) => logger.error(...args)
-      : options.logError ?? (() => null);
+    const resolvedOptions = { ...defaultOptions, ...options };
+    const logError = getLogError(event, resolvedOptions);
     if (err) {
       logError(err);
     }
-    const httpBlackList = options.blacklist ?? [
-      internalServerError,
-      forbiddenError,
-      unauthorirzedError,
-      unknownError,
-    ];
-    const { statusCode, message } = getSafeResponse(httpBlackList, err);
+    const { statusCode, message } = getSafeResponse(resolvedOptions, err);
     return {
       statusCode,
       headers: {
@@ -68,8 +72,25 @@ export const registerHttpErrorHandler = <T extends HttpErrorHandlerRequiredEvent
     };
   });
 
-export const getSafeResponse = (blacklist: BacklistItem[], error?: any) => {
-  const blacklistItem = blacklist.find(({ statusCode }) => error?.statusCode === statusCode);
+export const getLogError = (
+  event: HttpErrorHandlerRequiredEvents,
+  options: HttpErrorHandlerOptions,
+) => {
+  const logger = event.deps?.logger ?? options.logger;
+  return logger ? (...args: any[]) => logger.error(...args) : options.logError ?? (() => null);
+};
+
+export const getSafeResponse = (options: ResolvedHttpErrorHandlerOptions, error?: any) => {
+  const isSafeErrorInstance = error instanceof options.safeBaseError;
+  if (!isSafeErrorInstance) {
+    return {
+      message: internalServerError.alternativeMessage,
+      statusCode: internalServerError.statusCode,
+    };
+  }
+  const blacklistItem = options.blacklist.find(
+    ({ statusCode }) => error?.statusCode === statusCode,
+  );
   if (blacklistItem) {
     return {
       message: blacklistItem.alternativeMessage,

@@ -1,1 +1,3 @@
 !src/index.js
+!errors/BaseError.d.ts
+!errors/BaseError.js

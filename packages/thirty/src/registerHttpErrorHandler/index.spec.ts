@@ -3,6 +3,8 @@ import { compose, eventType } from '../core';
 import { registerHttpErrorHandler } from './index';
 import { inject } from '../inject';
 import { APIGatewayEvent } from 'aws-lambda';
+import { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError } from '../errors';
+import { ForbiddenError } from '../errors/ForbiddenError';
 
 describe('simple setup', () => {
   let handler;
@@ -21,7 +23,7 @@ describe('simple setup', () => {
   it('should return response with statusCode and message of thrown error', async () => {
     const error = { message: 'BadRequest', statusCode: 400 };
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(), error);
+      throw new BadRequestError('BadRequest');
     });
     const response = await handler({});
 
@@ -55,7 +57,7 @@ describe('simple setup', () => {
 
   it('should return InternalServerError with obfuscated error message', async () => {
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(), { statusCode: 500, message: 'Sensitive data' });
+      throw new InternalServerError('Sensitive data');
     });
     const response = await handler({});
 
@@ -72,7 +74,7 @@ describe('simple setup', () => {
 
   it('should return Unauthorized with obfuscated error message', async () => {
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(), { statusCode: 401, message: 'Sensitive data' });
+      throw new UnauthorizedError('Sensitive data');
     });
     const response = await handler({});
 
@@ -89,7 +91,7 @@ describe('simple setup', () => {
 
   it('should return Forbidden with obfuscated error message', async () => {
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(), { statusCode: 403, message: 'Sensitive data' });
+      throw new ForbiddenError('Sensitive data');
     });
     const response = await handler({});
 
@@ -114,21 +116,21 @@ describe('blacklist', () => {
     handler = compose(
       eventType<{}>(),
       registerHttpErrorHandler({
-        blacklist: [{ alternativeMessage: 'Error', statusCode: 405 }],
+        blacklist: [{ alternativeMessage: 'Error', statusCode: 404 }],
       }),
     )(async event => {
       throwError();
     });
   });
 
-  it('should return "Error" with statusCode "405"', async () => {
+  it('should return "Error" with statusCode "404"', async () => {
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(), { statusCode: 405, message: 'Sensitive data' });
+      throw new NotFoundError('Sensitive data');
     });
     const response = await handler({});
 
     expect(response).toEqual({
-      statusCode: 405,
+      statusCode: 404,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -140,7 +142,7 @@ describe('blacklist', () => {
 
   it('should not obfuscate error since it is not blacklisted', async () => {
     throwError.mockImplementation(() => {
-      throw Object.assign(new Error(), { statusCode: 401, message: 'Sensitive data' });
+      throw new UnauthorizedError('Sensitive data');
     });
     const response = await handler({});
 

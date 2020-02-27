@@ -1,7 +1,7 @@
 import { BaseError } from "./BaseError";
 
-export class InternalServerError extends BaseError {
-  statusCode = 500;
+export class ForbiddenError extends BaseError {
+  statusCode = 403;
   constructor(message: string) {
     super(message);
   }
