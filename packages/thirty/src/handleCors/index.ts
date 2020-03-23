@@ -74,15 +74,25 @@ export const handleCors = <T extends CorsRequiredEvent>(
       },
     };
   }
-  const response = await handler(event, ...rest);
-  return {
+  let error;
+  let response;
+  try {
+    response = await handler(event, ...rest);
+  } catch (e) {
+    error = e;
+  }
+  response = {
     ...response,
     headers: {
       ...accessControlAllowOrigin(evaluatedOptions, event),
       ...accessControlAllowCredentials(evaluatedOptions),
-      ...(response.headers ? response.headers : {}),
+      ...response?.headers,
     },
   };
+  if(error) {
+    return Promise.reject([error, response]);
+  }
+  return response;
 };
 
 const accessControlAllowOrigin = ({ origin }: EvaluatedCorsOptions, event: CorsRequiredEvent) => ({

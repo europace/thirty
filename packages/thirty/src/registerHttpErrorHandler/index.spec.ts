@@ -242,3 +242,34 @@ describe('options.logError', () => {
     expect(logError).toHaveBeenCalledWith(error);
   });
 });
+
+describe('response', () => {
+  let handler;
+  let error;
+  let enhancement;
+
+  beforeAll(() => {
+    error = new NotFoundError('Not found');
+    enhancement = { headers: { additional: '1' } };
+    handler = compose(
+      eventType<{}>(),
+      registerHttpErrorHandler(),
+    )(async () => {
+      return Promise.reject([error, enhancement]);
+    });
+  });
+
+  it('should enhance responses', async () => {
+    const response = await handler({});
+    expect(response).toEqual({
+      statusCode: 404,
+      headers: {
+        ...enhancement.headers,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        error: 'Not found',
+      }),
+    });
+  });
+});

@@ -3,7 +3,7 @@ import { APIGatewayProxyEvent } from 'aws-lambda';
 import { Middleware } from '../core';
 import { BaseError } from '../errors';
 
-export type BacklistItem = {
+export type BlacklistItem = {
   alternativeMessage: string;
   statusCode: number | undefined;
   alternativeStatusCode?: number;
@@ -27,7 +27,7 @@ export interface HttpErrorHandlerOptions {
    *  { message: 'InternalServerError', statusCode: undefined },
    *  ]
    */
-  blacklist?: BacklistItem[];
+  blacklist?: BlacklistItem[];
   safeBaseError?: any;
 }
 
@@ -42,10 +42,10 @@ const unknownError = {
 };
 const internalServerError = { statusCode: 500, alternativeMessage: 'InternalServerError' };
 const forbiddenError = { statusCode: 403, alternativeMessage: 'Forbidden' };
-const unauthorirzedError = { statusCode: 401, alternativeMessage: 'Unauthorized' };
+const unauthorizedError = { statusCode: 401, alternativeMessage: 'Unauthorized' };
 
 const defaultOptions: ResolvedHttpErrorHandlerOptions = {
-  blacklist: [internalServerError, forbiddenError, unauthorirzedError, unknownError],
+  blacklist: [internalServerError, forbiddenError, unauthorizedError, unknownError],
   safeBaseError: BaseError,
 };
 
@@ -54,7 +54,8 @@ type HttpErrorHandlerRequiredEvents = APIGatewayProxyEvent & { deps?: { logger?:
 export const registerHttpErrorHandler = <T extends HttpErrorHandlerRequiredEvents>(
   options: HttpErrorHandlerOptions = {},
 ): Middleware<T, T> => handler => async (event, ...args) =>
-  handler(event, ...args).catch(err => {
+  handler(event, ...args).catch(errorOrErrorAndResponse => {
+    const [err, response] = Array.isArray(errorOrErrorAndResponse) ? errorOrErrorAndResponse : [errorOrErrorAndResponse];
     const resolvedOptions = { ...defaultOptions, ...options };
     const logError = getLogError(event, resolvedOptions);
     if (err) {
@@ -62,8 +63,10 @@ export const registerHttpErrorHandler = <T extends HttpErrorHandlerRequiredEvent
     }
     const { statusCode, message } = getSafeResponse(resolvedOptions, err);
     return {
+      ...response,
       statusCode,
       headers: {
+        ...response?.headers,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
