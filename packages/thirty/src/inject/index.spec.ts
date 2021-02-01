@@ -84,6 +84,7 @@ it('should throw error due to circular dependency', async () => {
 });
 
 it('should pass other handler arguments properly', async () => {
+  const arg0 = {};
   const arg1 = 1;
   const arg2 = 2;
   const _handler = compose(
@@ -93,12 +94,8 @@ it('should pass other handler arguments properly', async () => {
     return args;
   });
 
-  await expect(_handler(arg1, arg2)).resolves.toEqual([
-    arg1,
-    arg2
-  ]);
+  await expect(_handler(arg0, arg1, arg2)).resolves.toEqual([arg0, arg1, arg2]);
 });
-
 
 it('should handle access on properties that are not defined on dependency factory', async () => {
   const _handler = compose(

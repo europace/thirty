@@ -1,4 +1,3 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
 import { decode, verify, VerifyOptions } from 'jsonwebtoken';
 
 import { Middleware } from '../core';
@@ -14,7 +13,7 @@ export interface JwtAuthOptions<T> extends VerifyOptions {
   }) => undefined | string | Promise<string | undefined>;
 }
 
-export const verifyJwt = <T extends APIGatewayProxyEvent>({
+export const verifyJwt = <T>({
   getToken,
   getSecretOrPublic,
   ...verifyOptions
@@ -45,7 +44,7 @@ export const getDecoded = token => {
   return decoded;
 };
 
-type TokenFromHeaderRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
+type TokenFromHeaderRequiredEvent = SanitizedHeadersEvent;
 export const tokenFromHeaderFactory = <T extends TokenFromHeaderRequiredEvent>(
   headerName = 'authorization',
 ) => (event: T) => {
@@ -57,7 +56,7 @@ export const tokenFromHeaderFactory = <T extends TokenFromHeaderRequiredEvent>(
   return token;
 };
 
-type TokenFromCookieRequiredEvent = APIGatewayProxyEvent & { cookie: object };
+type TokenFromCookieRequiredEvent = { cookie: object };
 export const tokenFromCookieFactory = <T extends TokenFromCookieRequiredEvent>(
   fieldName = 'authentication',
 ) => (event: T) => {

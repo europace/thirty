@@ -1,5 +1,3 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
-
 import { Middleware } from '../core';
 import { SanitizedHeadersEvent } from '../sanitizeHeaders';
 
@@ -56,7 +54,9 @@ export const defaultCorsOptions: EvaluatedCorsOptions = {
   maxAge: false,
 };
 
-type CorsRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
+interface CorsRequiredEvent extends SanitizedHeadersEvent {
+  httpMethod: string;
+}
 
 export const handleCors = <T extends CorsRequiredEvent>(
   options: CorsOptions = {},
@@ -89,7 +89,7 @@ export const handleCors = <T extends CorsRequiredEvent>(
       ...response?.headers,
     },
   };
-  if(error) {
+  if (error) {
     return Promise.reject([error, response]);
   }
   return response;

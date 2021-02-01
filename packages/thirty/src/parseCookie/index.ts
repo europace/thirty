@@ -1,9 +1,12 @@
 import { parse } from 'cookie';
-import { APIGatewayEvent } from 'aws-lambda';
+import { APIGatewayRequestAuthorizerEventHeaders } from 'aws-lambda';
 
 import { Middleware } from '../core';
 
-export const parseCookie = <T extends APIGatewayEvent>(): Middleware<
+export interface ParseCookieRequiredEvent {
+  headers: APIGatewayRequestAuthorizerEventHeaders | null;
+}
+export const parseCookie = <T extends ParseCookieRequiredEvent>(): Middleware<
   T,
   T & { cookie: object }
 > => handler => (event: T, ...args) =>

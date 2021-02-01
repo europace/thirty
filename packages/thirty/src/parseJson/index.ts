@@ -1,8 +1,9 @@
-import { APIGatewayEvent } from 'aws-lambda';
-
 import { Middleware } from '../core';
 
-export const parseJson = <T extends APIGatewayEvent>(): Middleware<
+export interface ParseJsonRequiredEvent {
+  body: string | null;
+}
+export const parseJson = <T extends ParseJsonRequiredEvent>(): Middleware<
   T,
   T & { jsonBody: object }
 > => handler => (event, ...args) =>
