@@ -47,7 +47,11 @@ const defaultOptions: ResolvedHttpErrorHandlerOptions = {
   safeBaseError: BaseError,
 };
 
-type HttpErrorHandlerRequiredEvents = { deps?: { logger?: ErrorLogger } };
+type HttpErrorHandlerRequiredEvents = {
+  path: string;
+  httpMethod: string;
+  deps?: { logger?: ErrorLogger };
+};
 
 export const registerHttpErrorHandler = <T extends HttpErrorHandlerRequiredEvents>(
   options: HttpErrorHandlerOptions = {},
