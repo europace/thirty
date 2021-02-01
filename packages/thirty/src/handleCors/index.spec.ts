@@ -98,8 +98,8 @@ describe('errors', () => {
       },
       statusCode: 404,
       body: JSON.stringify({
-        error: 'Not found'
-      })
+        error: 'Not found',
+      }),
     });
   });
 });

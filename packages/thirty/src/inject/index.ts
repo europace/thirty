@@ -22,7 +22,7 @@ export const inject = <T extends object, D extends DepsFactories<DepsOf<D>>>(
   };
 };
 
-export const createContainer = <D extends DepsFactories<DepsOf<D>>> (factories: D): DepsOf<D> => {
+export const createContainer = <D extends DepsFactories<DepsOf<D>>>(factories: D): DepsOf<D> => {
   const cache = {};
   const circularDepIndicator = {};
   const inject = id => container[id];
@@ -30,7 +30,7 @@ export const createContainer = <D extends DepsFactories<DepsOf<D>>> (factories: 
   const container = new Proxy(factories, {
     get(target, key: string) {
       if (key === 'inject') return inject;
-      if (!(key in cache) && (key in factories)) {
+      if (!(key in cache) && key in factories) {
         depChainKeys.push(String(key));
         if (circularDepIndicator[key]) {
           throw new Error(
