@@ -16,6 +16,7 @@ and type safe.
   - [`parseJson`](#parsejson)
   - [`handleHttpErrors`](#handlehttperrors)
   - [`sanitizeHeaders`](#sanitizeheaders)
+  - [`decoreParameters`](#decodeParameters)
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
 - [Routing](#routing)
@@ -144,8 +145,6 @@ The above example would create an error response that would look like:
 }
 ```
 
-
-
 ### `inject`
 
 `inject` is a middleware that provides lightweight dependency injection with the possibility of circular dependencies.
@@ -174,7 +173,7 @@ Each factory gets a reference to the created dependency container:
 export type AuthServiceDeps = { userService: UserService };
 export type AuthService = ReturnType<typeof authServiceFactory>;
 
-export const authServiceFactory = ({userService}: AuthServiceDeps) => ({
+export const authServiceFactory = ({ userService }: AuthServiceDeps) => ({
   authenticate() {
     const user = userService.getUser();
     // ...
@@ -238,7 +237,7 @@ export const handler = compose(
   eventType<{ someType: string }>(),
   registerHttpErrorHandler({
     logger: console,
-    backlist: [{statusCode: 401, message: 'Alternative message'}]
+    backlist: [{ statusCode: 401, message: 'Alternative message' }],
   }),
 )(async event => {
   throw new BadRequestError('Parameter x missing');
@@ -264,6 +263,24 @@ export const handler = compose(
 });
 ```
 
+### `decodeParameters`
+
+`decodeParameters` is a middleware that decodes all parameter values with `decodeURIComponent` and stores them in 
+`event.decodedPathParameters`,`event.decodedQueryParameters`, `event.decodedMultiValueQueryParameters`.
+
+```typescript
+import { decodeParameters } from 'thirty/decodeParameters';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+        decodeParameters(),
+)(async event => {
+  event.decodeParameters;
+  event.decodedQueryParameters;
+  event.decodedMultiValueQueryParameters;
+});
+```
+
 ### `verifyJwt`
 
 `verifyJwt` is a authentication middleware, which extends the event object by a `user` object and throws an
@@ -286,7 +303,8 @@ export const handler = compose(
 `thirty/verifyJwt` already provides factory functions to retrieve the token from headers or cookie:
 
 - `tokenFromHeaderFactory` expects a header name (default is `'Authorization'`).
-   > Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
+
+  > Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
 
   ```typescript
   import { tokenFromHeaderFactory } from 'thirty/verifyJwt';
@@ -324,7 +342,7 @@ import { verifyXsrfToken } from 'thirty/verifyXsrfToken';
 export const handler = compose(
   eventType<{ someType: string }>(),
   verifyXsrfToken({
-    getSecret: ({event}) => secret,
+    getSecret: ({ event }) => secret,
   }),
 )(async event => {
   // ...
