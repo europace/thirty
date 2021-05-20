@@ -1,5 +1,5 @@
 import { compose, eventType } from '../core';
-import { inject, Injector } from './index';
+import { inject, Injector, LazyInject } from './index';
 
 let handler;
 
@@ -105,4 +105,28 @@ it('should handle access on properties that are not defined on dependency factor
     }),
   )(async event => event.deps['undefinedDependency']);
   await expect(_handler({})).resolves.toBeUndefined();
+});
+
+describe('lazy injection', () => {
+  it('should ', async () => {
+    type B = ReturnType<typeof bFactory>;
+    const bFactory = () => ({
+      isB: true,
+    });
+    const aFactory = ({inject}: {inject: LazyInject<{b: B}>}) => ({
+      getB() {
+        return inject('b');
+      }
+    });
+    const _handler = compose(
+      eventType<{}>(),
+      inject({
+        a: aFactory,
+        b: bFactory,
+      }),
+    )(async event => event.deps.a);
+    const a = await _handler({});
+
+    expect(a.getB()).toEqual({isB: true})
+  });
 });

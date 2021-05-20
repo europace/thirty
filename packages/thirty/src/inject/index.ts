@@ -1,7 +1,11 @@
 import { Middleware } from '../core';
 
+export type LazyInject<TDeps> = <TTargetKey extends keyof TDeps>(key: TTargetKey) => TDeps[TTargetKey];
+export type LazyInjector<TDeps> = {
+  inject: LazyInject<TDeps>
+};
 export type Deps<T> = { deps: T };
-export type DepsFactories<T> = { [props: string]: (deps: T) => any };
+export type DepsFactories<T> = { [props: string]: (deps: T & LazyInjector<T>) => any };
 export type DepsOf<T extends DepsFactories<DepsOf<T>>> = {
   [P in keyof T]: ReturnType<T[P]>;
 };
@@ -38,7 +42,7 @@ export const createContainer = <D extends DepsFactories<DepsOf<D>>>(factories: D
           );
         }
         circularDepIndicator[key] = true;
-        cache[key] = factories[key](container);
+        cache[key] = factories[key](container as any);
         depChainKeys = [];
       }
       return cache[key];
