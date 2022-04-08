@@ -11,10 +11,10 @@ export interface CorsOptions {
 
   /**
    * When true, uses 'Origin' header from request as 'Access-Control-Allow-Origin'
-   * in response
+   * in response.
    * @default '*'
    */
-  origin?: true | string;
+  origin?: true | string | string[];
 
   /**
    * Specifies value for 'Access-Control-Allow-Credentials' header
@@ -95,9 +95,23 @@ export const handleCors = <T extends CorsRequiredEvent>(
   return response;
 };
 
-const accessControlAllowOrigin = ({ origin }: EvaluatedCorsOptions, event: CorsRequiredEvent) => ({
-  'Access-Control-Allow-Origin': origin === true ? event.sanitizedHeaders['origin'] : origin,
-});
+const accessControlAllowOrigin = ({ origin }: EvaluatedCorsOptions, event: CorsRequiredEvent) => {
+  const requestOrigin = event.sanitizedHeaders['origin'];
+  let _origin: string | null = null;
+  if (origin === true) {
+    _origin = requestOrigin;
+  } else if (Array.isArray(origin)) {
+    if (origin.includes(requestOrigin)) {
+      _origin = requestOrigin;
+    }
+  } else {
+    _origin = origin;
+  }
+
+  return {
+    'Access-Control-Allow-Origin': _origin,
+  };
+};
 const accessControlAllowCredentials = ({ credentials }: EvaluatedCorsOptions) => ({
   'Access-Control-Allow-Credentials': String(credentials),
 });

@@ -47,6 +47,70 @@ it('should add handleCors headers on any other request', async () => {
   });
 });
 
+describe('with origin=test', () => {
+  beforeAll(() => {
+    handler = compose(
+      eventType<APIGatewayProxyEvent>(),
+      sanitizeHeaders(),
+      handleCors({ origin: 'test' }),
+    )(async event => {
+      return {
+        statusCode: 200,
+        headers: {
+          'Set-Cookie': 'session=1234',
+        },
+      };
+    });
+  });
+
+  it('should return Access-Control-Allow-Origin set to "test"', async () => {
+    const response = await handler({ httpMethod: 'OPTIONS' });
+    expect(response.headers).toEqual(
+      expect.objectContaining({
+        'Access-Control-Allow-Origin': 'test',
+      }),
+    );
+  });
+});
+
+describe('with origin=[test]', () => {
+  beforeAll(() => {
+    handler = compose(
+      eventType<APIGatewayProxyEvent>(),
+      sanitizeHeaders(),
+      handleCors({ origin: ['test'] }),
+    )(async event => {
+      return {
+        statusCode: 200,
+        headers: {
+          'Set-Cookie': 'session=1234',
+        },
+      };
+    });
+  });
+
+  it('should return Access-Control-Allow-Origin set to "test" due to request header', async () => {
+    const response = await handler({ httpMethod: 'OPTIONS', headers: { origin: 'test' } });
+    expect(response.headers).toEqual(
+      expect.objectContaining({
+        'Access-Control-Allow-Origin': 'test',
+      }),
+    );
+  });
+
+  it('should return Access-Control-Allow-Origin set to "null" due to invalid request-origin', async () => {
+    const response = await handler({
+      httpMethod: 'OPTIONS',
+      headers: { origin: 'invalid' },
+    });
+    expect(response.headers).toEqual(
+      expect.objectContaining({
+        'Access-Control-Allow-Origin': null,
+      }),
+    );
+  });
+});
+
 describe('preflight', () => {
   beforeAll(() => {
     handler = compose(
@@ -63,7 +127,7 @@ describe('preflight', () => {
     });
   });
 
-  it('should return not return preflight headers on OPTIONS request', async () => {
+  it('should not return preflight headers on OPTIONS request', async () => {
     const response = await handler({ httpMethod: 'OPTIONS' });
     expect(response).toEqual({
       headers: {
@@ -76,30 +140,60 @@ describe('preflight', () => {
   });
 });
 
-describe('errors', () => {
-  beforeAll(() => {
-    handler = compose(
-      eventType<APIGatewayProxyEvent>(),
-      sanitizeHeaders(),
-      registerHttpErrorHandler(),
-      handleCors(),
-    )(async () => {
-      throw new NotFoundError('Not found');
+describe('registerHttpErrorHandler', () => {
+  describe('after', () => {
+    beforeAll(() => {
+      handler = compose(
+        eventType<APIGatewayProxyEvent>(),
+        sanitizeHeaders(),
+        registerHttpErrorHandler(),
+        handleCors(),
+      )(async () => {
+        throw new NotFoundError('Not found');
+      });
+    });
+
+    it('should add access control headers after error appeared', async () => {
+      const response = await handler({ httpMethod: 'GET' });
+      expect(response).toEqual({
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        },
+        statusCode: 404,
+        body: JSON.stringify({
+          error: 'Not found',
+        }),
+      });
     });
   });
 
-  it('should add access control headers after error appeared', async () => {
-    const response = await handler({ httpMethod: 'GET' });
-    expect(response).toEqual({
-      headers: {
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
-      statusCode: 404,
-      body: JSON.stringify({
-        error: 'Not found',
-      }),
+  describe('before', () => {
+    beforeAll(() => {
+      handler = compose(
+        eventType<APIGatewayProxyEvent>(),
+        sanitizeHeaders(),
+        handleCors(),
+        registerHttpErrorHandler(),
+      )(async () => {
+        throw new NotFoundError('Not found');
+      });
+    });
+
+    it('should add access control headers after error appeared', async () => {
+      const response = await handler({ httpMethod: 'GET' });
+      expect(response).toEqual({
+        headers: {
+          'Access-Control-Allow-Credentials': 'true',
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'application/json',
+        },
+        statusCode: 404,
+        body: JSON.stringify({
+          error: 'Not found',
+        }),
+      });
     });
   });
 });
