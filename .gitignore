@@ -9,5 +9,3 @@ dist
 *.js
 *.d.ts
 
-# configs
-!webpack.config.js
