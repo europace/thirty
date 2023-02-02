@@ -1,8 +1,10 @@
 import { Middleware } from '../core';
 
-export type LazyInject<TDeps> = <TTargetKey extends keyof TDeps>(key: TTargetKey) => TDeps[TTargetKey];
+export type LazyInject<TDeps> = <TTargetKey extends keyof TDeps>(
+  key: TTargetKey,
+) => TDeps[TTargetKey];
 export type LazyInjector<TDeps> = {
-  inject: LazyInject<TDeps>
+  inject: LazyInject<TDeps>;
 };
 export type Deps<T> = { deps: T };
 export type DepsFactories<T> = { [props: string]: (deps: T & LazyInjector<T>) => any };

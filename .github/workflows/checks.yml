@@ -1,0 +1,36 @@
+name: Checks
+
+on: [push]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Installation
+        run: |
+          npm ci
+      - name: lint
+        run: |
+          npm run lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - name: Installation
+        run: |
+          npm ci
+      - name: Build
+        run: |
+          npm run build
+      - name: Tests
+        run: npm test

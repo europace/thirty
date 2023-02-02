@@ -113,10 +113,10 @@ describe('lazy injection', () => {
     const bFactory = () => ({
       isB: true,
     });
-    const aFactory = ({inject}: {inject: LazyInject<{b: B}>}) => ({
+    const aFactory = ({ inject }: { inject: LazyInject<{ b: B }> }) => ({
       getB() {
         return inject('b');
-      }
+      },
     });
     const _handler = compose(
       eventType<{}>(),
@@ -127,6 +127,6 @@ describe('lazy injection', () => {
     )(async event => event.deps.a);
     const a = await _handler({});
 
-    expect(a.getB()).toEqual({isB: true})
+    expect(a.getB()).toEqual({ isB: true });
   });
 });

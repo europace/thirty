@@ -14,7 +14,7 @@
     "build": "tsc --build tsconfig.build.json",
     "build:clean": "tsc --build tsconfig.build.json --clean",
     "prettier:write": "prettier --write \"src/**/*.{ts,json}\"",
-    "prettier:check": "prettier --check \"src/**/*.{ts,json}\"",
+    "lint": "prettier --check \"src/**/*.{ts,json}\"",
     "prepublishOnly": "npm test && npm run build"
   },
   "jest": {
