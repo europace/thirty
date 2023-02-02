@@ -2,18 +2,16 @@ import { verifyJwt, tokenFromCookieFactory, tokenFromHeaderFactory } from './ind
 import { sign } from 'jsonwebtoken';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from '../core';
-import Spy = jasmine.Spy;
-import createSpy = jasmine.createSpy;
 import { UnauthorizedError } from '../errors/UnauthorizedError';
 
 let handler;
 let token;
-let spy: Spy;
+let spy: jest.Mock;
 const secret = 'testsecret';
 const payload = { name: 'bob' };
 
 beforeEach(() => {
-  spy = createSpy();
+  spy = jest.fn();
   handler = compose(
     eventType<{}>(),
     verifyJwt({

@@ -2,17 +2,15 @@ import Csrf from 'csrf';
 import { XSRF_HEADER_NAME, verifyXsrfToken } from './index';
 import { compose, eventType } from '../core';
 import { UnauthorizedError } from '../errors/UnauthorizedError';
-import Spy = jasmine.Spy;
-import createSpy = jasmine.createSpy;
 
 let handler;
 let token;
-let spy: Spy;
+let spy: jest.Mock;
 const secret = 'test';
 
 beforeEach(() => {
   token = new Csrf({ saltLength: 256 }).create(secret);
-  spy = createSpy();
+  spy = jest.fn();
   handler = compose(
     eventType<{}>(),
     verifyXsrfToken({

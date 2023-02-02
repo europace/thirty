@@ -19,7 +19,7 @@
   },
   "jest": {
     "transform": {
-      "^.+\\.(ts|tsx)$": "ts-jest"
+      "^.+\\.(ts)$": "ts-jest"
     }
   },
   "prettier": {

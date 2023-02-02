@@ -5,7 +5,7 @@ import { UnauthorizedError } from '../errors/UnauthorizedError';
 import { SanitizedHeadersEvent } from '../sanitizeHeaders';
 
 export interface JwtAuthOptions<T> extends VerifyOptions {
-  getToken: (event: T) => undefined | string | Promise<string | undefined>;
+  getToken: (event: T) => Promise<string | undefined>;
   getSecretOrPublic: (props: {
     token: string;
     event: T;
@@ -13,7 +13,7 @@ export interface JwtAuthOptions<T> extends VerifyOptions {
   }) => undefined | string | Promise<string | undefined>;
 }
 
-export const verifyJwt = <T>({
+export const verifyJwt = <T extends object>({
   getToken,
   getSecretOrPublic,
   ...verifyOptions
@@ -33,7 +33,7 @@ export const verifyJwt = <T>({
   } catch (err) {
     throw new UnauthorizedError();
   }
-  return handler(Object.assign(event, { user }), ...rest);
+  return handler(Object.assign(event, { user }) as any, ...rest);
 };
 
 export const getDecoded = token => {
