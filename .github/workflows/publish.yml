@@ -34,6 +34,7 @@ jobs:
         run: |
           IFS='/' read -ra PARTS <<< "$GITHUB_REF"
           VERSION="${PARTS[3]}"
+          echo $VERSION
           npm version $VERSION
 
       - name: Commit and push
