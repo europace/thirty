@@ -34,7 +34,7 @@ jobs:
         run: |
           echo "$GITHUB_REF"
           IFS='/' read -ra PARTS <<< "$GITHUB_REF"
-          VERSION="${PARTS[3]}"
+          VERSION="${PARTS[2]}"
           echo $VERSION
           npm version ${{ env.VERSION }}
 
