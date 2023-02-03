@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout
         uses: 'actions/checkout@v3.1.0'
+        with:
+          ref: master
 
       - name: Node setup
         uses: 'actions/setup-node@v3.5.1'
@@ -46,8 +48,6 @@ jobs:
       - name: Commit and push
         run: |
           git status
-          git add -A
-          git commit -m "Release ${{ env.NEW_VERSION }}"
           git push
 
       - name: Publish
