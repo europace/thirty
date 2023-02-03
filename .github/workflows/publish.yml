@@ -10,15 +10,38 @@ jobs:
   publish-npm:
     runs-on: 'ubuntu-latest'
     steps:
+      - name: Checkout
       - uses: 'actions/checkout@v3.1.0'
 
+      - name: Node setup
       - uses: 'actions/setup-node@v3.5.1'
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org/'
 
+      - name: Git configuration
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Installation
       - run: 'npm ci'
+
+      - name: Build
       - run: 'npm run build'
+
+      - name: Bump version
+      - run: |
+          IFS='/' read -rA PARTS <<< "$GITHUB_REF"
+          VERSION="${PARTS[3]}"
+          npm version $VERSION
+
+      - name: Commit and push
+      - run: |
+          git add -A
+          git commit -m "Release $VERSION"
+          git push
+
       - run: 'npm publish'
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
