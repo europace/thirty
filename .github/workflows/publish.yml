@@ -32,6 +32,7 @@ jobs:
 
       - name: Bump version
         run: |
+          echo "$$GITHUB_REF"
           IFS='/' read -ra PARTS <<< "$GITHUB_REF"
           VERSION="${PARTS[3]}"
           echo $VERSION
