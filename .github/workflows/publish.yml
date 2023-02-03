@@ -30,20 +30,22 @@ jobs:
       - name: Build
         run: 'npm run build'
 
-      - name: Bump version
+      - name: Determine new version
         run: |
           echo "$GITHUB_REF"
           IFS='/' read -ra PARTS <<< "$GITHUB_REF"
-          VERSION="${PARTS[2]}"
-          echo "VERSION=${PARTS[2]}" >> $GITHUB_ENV
-          echo $VERSION
-          echo $GITHUB_ENV
-          npm version ${{ env.VERSION }}
+          NEW_VERSION="${PARTS[2]}"
+          echo "$NEW_VERSION"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Bump version
+        run: |
+          npm version ${{ env.NEW_VERSION }}
 
       - name: Commit and push
         run: |
           git add -A
-          git commit -m "Release ${{ env.VERSION }}"
+          git commit -m "Release ${{ env.NEW_VERSION }}"
           git push
 
       - name: Publish
