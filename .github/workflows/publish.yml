@@ -11,10 +11,10 @@ jobs:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Checkout
-      - uses: 'actions/checkout@v3.1.0'
+        uses: 'actions/checkout@v3.1.0'
 
       - name: Node setup
-      - uses: 'actions/setup-node@v3.5.1'
+        uses: 'actions/setup-node@v3.5.1'
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org/'
@@ -25,23 +25,24 @@ jobs:
           git config --global user.name "GitHub Actions"
 
       - name: Installation
-      - run: 'npm ci'
+        run: 'npm ci'
 
       - name: Build
-      - run: 'npm run build'
+        run: 'npm run build'
 
       - name: Bump version
-      - run: |
+        run: |
           IFS='/' read -rA PARTS <<< "$GITHUB_REF"
           VERSION="${PARTS[3]}"
           npm version $VERSION
 
       - name: Commit and push
-      - run: |
+        run: |
           git add -A
           git commit -m "Release $VERSION"
           git push
 
-      - run: 'npm publish'
+      - name: Publish
+        run: 'npm publish'
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
