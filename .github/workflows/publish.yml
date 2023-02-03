@@ -41,9 +41,11 @@ jobs:
       - name: Bump version
         run: |
           npm version ${{ env.NEW_VERSION }}
+          git status
 
       - name: Commit and push
         run: |
+          git status
           git add -A
           git commit -m "Release ${{ env.NEW_VERSION }}"
           git push
