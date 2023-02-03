@@ -35,12 +35,12 @@ jobs:
           IFS='/' read -ra PARTS <<< "$GITHUB_REF"
           VERSION="${PARTS[3]}"
           echo $VERSION
-          npm version $VERSION
+          npm version ${{ env.VERSION }}
 
       - name: Commit and push
         run: |
           git add -A
-          git commit -m "Release $VERSION"
+          git commit -m "Release ${{ env.VERSION }}"
           git push
 
       - name: Publish
