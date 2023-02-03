@@ -35,7 +35,9 @@ jobs:
           echo "$GITHUB_REF"
           IFS='/' read -ra PARTS <<< "$GITHUB_REF"
           VERSION="${PARTS[2]}"
+          echo "VERSION=${PARTS[2]}" >> $GITHUB_ENV
           echo $VERSION
+          echo $GITHUB_ENV
           npm version ${{ env.VERSION }}
 
       - name: Commit and push
