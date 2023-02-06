@@ -7,6 +7,7 @@ and type safe.
 
 - [Install](#install)
 - [Usage](#usage)
+- [Publish](#publish)
 - [Testing](#testing)
 - [`compose`](#compose)
 - [Middlewares](#middlewares)
@@ -59,6 +60,18 @@ export const handler = compose(
   };
 });
 ```
+
+## Publish
+
+In order to publish a new version to npm, create a new release on github. 
+1. Create a tag. The tag needs to follow semver (Don't prefix the version 
+number with "v" as suggested by github). e.g. `1.7.0`
+2. Define a release title
+3. Generate release notes by clicking "Generate release notes"
+4. Click "Publish release"
+
+> ℹ️ The package will automatically bundled and published to npm via the 
+> `publish.yml` workflow.
 
 ## Testing
 
