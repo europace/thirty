@@ -2,7 +2,7 @@ import { compose, types } from '../core';
 import { APIGatewayEvent } from 'aws-lambda';
 import { serializeJson } from './';
 import { APIGatewayProxyResult } from '../types/APIGatewayProxyResult';
-import { t } from '../types/TypeRef';
+import { of } from '../types/TypeRef';
 
 describe('given no body type is specified', () => {
   const createHandler = () =>
@@ -40,7 +40,7 @@ describe('given body type is specified', () => {
   const createHandler = () =>
     compose(
       types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
-      serializeJson(t<Message>),
+      serializeJson(of<Message>),
     )(async (event) => {
       return {
         statusCode: 200,
@@ -70,7 +70,7 @@ describe('given body type is specified but not returned properly', () => {
   it('should throw ts error', () => {
     compose(
       types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
-      serializeJson(t<{ id: string; description: string }>),
+      serializeJson(of<{ id: string; description: string }>),
       // @ts-expect-error
     )(async (event) => {
       return {

@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, types } from '../core';
 import { parseJson } from './index';
-import { t } from '../types/TypeRef';
+import { of } from '../types/TypeRef';
 
 let handler;
 const body = { name: 'bob', age: 12 };
@@ -25,7 +25,7 @@ describe('given body type is specified', () => {
     it('should not throw ts errors', () => {
       handler = compose(
         types<APIGatewayProxyEvent, any>(),
-        parseJson(t<{ id: string; description: string }>),
+        parseJson(of<{ id: string; description: string }>),
       )(async (event) => {
         event.jsonBody.id;
         event.jsonBody.description;
@@ -36,7 +36,7 @@ describe('given body type is specified', () => {
     it('should throw ts error', () => {
       handler = compose(
         types<APIGatewayProxyEvent, any>(),
-        parseJson(t<{ id: string; description: string }>),
+        parseJson(of<{ id: string; description: string }>),
       )(async (event) => {
         // @ts-expect-error
         event.jsonBody.unknown;

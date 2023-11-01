@@ -1,7 +1,7 @@
 import { compose, types } from '../core';
 import { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
 import { forEachSqsRecord } from './index';
-import { t } from '../types/TypeRef';
+import { of } from '../types/TypeRef';
 import { mock } from '../types/mock';
 import { inject } from '../inject';
 
@@ -22,7 +22,7 @@ describe('given batchItemFailures are expected', () => {
       }),
       forEachSqsRecord({
         batchItemFailures: true,
-        bodyType: t<SomeMessageBody>,
+        bodyType: of<SomeMessageBody>,
       }),
     )(async (event) => {
       if (event.record.body.shouldFail) {
@@ -45,7 +45,7 @@ describe('given batchItemFailures are expected', () => {
         // @ts-expect-error
         forEachSqsRecord({
           batchItemFailures: false,
-          bodyType: t<SomeMessageBody>,
+          bodyType: of<SomeMessageBody>,
         }),
       )(async (event) => {});
     });
@@ -118,7 +118,7 @@ describe('given no batchItemFailures are expected', () => {
       types<SQSEvent, Promise<void>>(),
       forEachSqsRecord({
         batchItemFailures: false,
-        bodyType: t<SomeMessageBody>,
+        bodyType: of<SomeMessageBody>,
       }),
     )(async (event) => {
       if (event.record.body.shouldFail) {
@@ -140,7 +140,7 @@ describe('given no batchItemFailures are expected', () => {
         // @ts-expect-error
         forEachSqsRecord({
           batchItemFailures: true,
-          bodyType: t<SomeMessageBody>,
+          bodyType: of<SomeMessageBody>,
         }),
       )(async (event) => {});
     });
