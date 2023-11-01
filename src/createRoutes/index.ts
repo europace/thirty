@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import Router from 'router';
 
-import { Handler } from '../core';
+import { Next } from '../core';
 
 const methods = [
   'get',
@@ -24,7 +24,7 @@ type IRouter<T> = { [P in Method]: Route<T> };
 
 export const createRoutes = <T extends APIGatewayProxyEvent>(
   applyRoutes: (router: IRouter<T>) => any,
-): Handler<T> => {
+): Next<T> => {
   const router = promisifyMethods(Router());
   applyRoutes(router);
   return (event: T) =>

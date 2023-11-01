@@ -17,7 +17,7 @@ export interface DecodedParametersEvent {
   decodedMultiValueQueryStringParameters: MultiValueParameters;
 }
 
-export const decodeParameters = <T extends DecodedParametersRequiredEvent>(): Middleware<T, T & DecodedParametersEvent, {}> => handler => (event, ...args) => handler(Object.assign(event, {
+export const decodeParameters = <T extends DecodedParametersRequiredEvent>(): Middleware<T, T & DecodedParametersEvent> => handler => (event, ...args) => handler(Object.assign(event, {
   decodedPathParameters: exports.decode(event.pathParameters),
   decodedQueryStringParameters: exports.decode(event.queryStringParameters),
   decodedMultiValueQueryStringParameters: exports.decode(event.multiValueQueryStringParameters),

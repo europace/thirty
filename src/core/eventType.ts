@@ -1,5 +1,5 @@
 import { Middleware } from './Middleware';
 
-export const eventType = <InitialType>(): Middleware<InitialType, InitialType> => handler => (
+export const eventType = <InitialType, ReturnType>(): Middleware<InitialType, InitialType, Promise<ReturnType>, Promise<ReturnType>> => handler => (
   ...args
 ) => handler(...args);
