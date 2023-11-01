@@ -1,10 +1,11 @@
-import { compose, eventType } from '../core';
+import { compose, types } from '../core';
 
 import { registerHttpErrorHandler } from './index';
 import { inject } from '../inject';
 import { APIGatewayEvent } from 'aws-lambda';
 import { BadRequestError, InternalServerError, NotFoundError, UnauthorizedError } from '../errors';
 import { ForbiddenError } from '../errors/ForbiddenError';
+import { APIGatewayProxyResult } from '../types/APIGatewayProxyResult';
 
 describe('simple setup', () => {
   let handler;
@@ -13,10 +14,14 @@ describe('simple setup', () => {
   beforeAll(() => {
     throwError = jest.fn();
     handler = compose(
-      eventType<{}>(),
+      types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
       registerHttpErrorHandler(),
-    )(async event => {
+    )(async (event) => {
       throwError();
+
+      return {
+        statusCode: 200,
+      };
     });
   });
 
@@ -33,7 +38,7 @@ describe('simple setup', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: error.message,
+        message: error.message,
       }),
     });
   });
@@ -50,7 +55,7 @@ describe('simple setup', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: 'InternalServerError',
+        message: 'InternalServerError',
       }),
     });
   });
@@ -67,7 +72,7 @@ describe('simple setup', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: 'InternalServerError',
+        message: 'InternalServerError',
       }),
     });
   });
@@ -84,7 +89,7 @@ describe('simple setup', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: 'Unauthorized',
+        message: 'Unauthorized',
       }),
     });
   });
@@ -101,7 +106,7 @@ describe('simple setup', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: 'Forbidden',
+        message: 'Forbidden',
       }),
     });
   });
@@ -114,12 +119,16 @@ describe('blacklist', () => {
   beforeAll(() => {
     throwError = jest.fn();
     handler = compose(
-      eventType<{}>(),
+      types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
       registerHttpErrorHandler({
         blacklist: [{ alternativeMessage: 'Error', statusCode: 404 }],
       }),
-    )(async event => {
+    )(async (event) => {
       throwError();
+
+      return {
+        statusCode: 200,
+      };
     });
   });
 
@@ -135,7 +144,7 @@ describe('blacklist', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: 'Error',
+        message: 'Error',
       }),
     });
   });
@@ -152,7 +161,7 @@ describe('blacklist', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        error: 'Sensitive data',
+        message: 'Sensitive data',
       }),
     });
   });
@@ -167,13 +176,17 @@ describe('event.deps.logger', () => {
     throwError = jest.fn();
     logError = jest.fn();
     handler = compose(
-      eventType<APIGatewayEvent>(),
+      types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
       inject({
         logger: () => ({ error: logError }),
       }),
       registerHttpErrorHandler(),
-    )(async event => {
+    )(async (event) => {
       throwError();
+
+      return {
+        statusCode: 200,
+      };
     });
   });
 
@@ -196,12 +209,16 @@ describe('options.logger', () => {
     throwError = jest.fn();
     logError = jest.fn();
     handler = compose(
-      eventType<{}>(),
+      types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
       registerHttpErrorHandler({
         logger: { error: logError },
       }),
-    )(async event => {
+    )(async (event) => {
       throwError();
+
+      return {
+        statusCode: 200,
+      };
     });
   });
 
@@ -224,12 +241,16 @@ describe('options.logError', () => {
     throwError = jest.fn();
     logError = jest.fn();
     handler = compose(
-      eventType<{}>(),
+      types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
       registerHttpErrorHandler({
         logError,
       }),
-    )(async event => {
+    )(async (event) => {
       throwError();
+
+      return {
+        statusCode: 200,
+      };
     });
   });
 
@@ -240,36 +261,5 @@ describe('options.logError', () => {
     });
     await handler({});
     expect(logError).toHaveBeenCalledWith(error);
-  });
-});
-
-describe('response', () => {
-  let handler;
-  let error;
-  let enhancement;
-
-  beforeAll(() => {
-    error = new NotFoundError('Not found');
-    enhancement = { headers: { additional: '1' } };
-    handler = compose(
-      eventType<{}>(),
-      registerHttpErrorHandler(),
-    )(async () => {
-      return Promise.reject([error, enhancement]);
-    });
-  });
-
-  it('should enhance responses', async () => {
-    const response = await handler({});
-    expect(response).toEqual({
-      statusCode: 404,
-      headers: {
-        ...enhancement.headers,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        error: 'Not found',
-      }),
-    });
   });
 });

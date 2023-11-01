@@ -8,14 +8,14 @@ export interface SanitizedHeadersEvent {
   sanitizedHeaders: { [name: string]: string };
 }
 
-export const sanitizeHeaders = <T extends SanitizedHeadersRequiredEvent>(): Middleware<
-  T,
-  T & SanitizedHeadersEvent
-> => handler => (event, ...args) =>
-  handler(
-    Object.assign(event, { sanitizedHeaders: event.headers ? sanitize(event.headers) : {} }),
-    ...args,
-  );
+export const sanitizeHeaders =
+  <T extends SanitizedHeadersRequiredEvent, R>(): Middleware<T, T & SanitizedHeadersEvent, R, R> =>
+  (handler) =>
+  (event, ...args) =>
+    handler(
+      Object.assign(event, { sanitizedHeaders: event.headers ? sanitize(event.headers) : {} }),
+      ...args,
+    );
 
 export const sanitize = (headers: object | null | undefined) => {
   const safeHeaders = headers ? headers : {};

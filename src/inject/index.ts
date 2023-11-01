@@ -16,22 +16,24 @@ export interface Injector {
   inject: <K extends keyof this>(id: K) => this[K];
 }
 
-export const inject = <T extends object, D extends DepsFactories<DepsOf<D>>>(
-  depsFactories: D,
-): Middleware<T, Deps<DepsOf<D>> & T> => handler => {
-  let container;
-  return (event, ...args) => {
-    if (!container) {
-      container = createContainer(depsFactories);
-    }
-    return handler(Object.assign(event, { deps: container }), ...args);
+export const inject =
+  <T extends object, D extends DepsFactories<DepsOf<D>>, R>(
+    depsFactories: D,
+  ): Middleware<T, Deps<DepsOf<D>> & T, R, R> =>
+  (handler) => {
+    let container;
+    return (event, ...args) => {
+      if (!container) {
+        container = createContainer(depsFactories);
+      }
+      return handler(Object.assign(event, { deps: container }), ...args);
+    };
   };
-};
 
 export const createContainer = <D extends DepsFactories<DepsOf<D>>>(factories: D): DepsOf<D> => {
   const cache = {};
   const circularDepIndicator = {};
-  const inject = id => container[id];
+  const inject = (id) => container[id];
   let depChainKeys: string[] = [];
   const container = new Proxy(factories, {
     get(target, key: string) {
@@ -40,7 +42,7 @@ export const createContainer = <D extends DepsFactories<DepsOf<D>>>(factories: D
         depChainKeys.push(String(key));
         if (circularDepIndicator[key]) {
           throw new Error(
-            `Circular dependency detected ${depChainKeys.map(key => `"${key}"`).join(' -> ')}`,
+            `Circular dependency detected ${depChainKeys.map((key) => `"${key}"`).join(' -> ')}`,
           );
         }
         circularDepIndicator[key] = true;
@@ -53,4 +55,4 @@ export const createContainer = <D extends DepsFactories<DepsOf<D>>>(factories: D
   return container;
 };
 
-export const withInject = deps => ({ ...deps, inject: id => deps[id] });
+export const withInject = (deps) => ({ ...deps, inject: (id) => deps[id] });

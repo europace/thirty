@@ -5,7 +5,7 @@ let handler;
 
 type Deps = { cService; aService: { a } } & Injector;
 
-const aService = jest.fn().mockImplementation(deps => ({ a: 'a', test: () => deps.bService.b }));
+const aService = jest.fn().mockImplementation((deps) => ({ a: 'a', test: () => deps.bService.b }));
 const bService = jest.fn().mockImplementation(({ cService, inject }: Deps) => ({
   b: 'b',
   test: () => cService.c + inject('aService').a,
@@ -22,7 +22,7 @@ beforeAll(() => {
       bService,
       cService,
     }),
-  )(async event => {
+  )(async (event) => {
     const { aService, bService, cService } = event.deps;
     return {
       fromA: aService.test(),
@@ -51,7 +51,7 @@ it('should handle falsy values', async () => {
     inject({
       value: () => '',
     }),
-  )(async event => {
+  )(async (event) => {
     event.deps.value;
     event.deps.value;
   });
@@ -73,7 +73,7 @@ it('should throw error due to circular dependency', async () => {
         },
       }),
     }),
-  )(async event => {
+  )(async (event) => {
     event.deps.bService;
     event.deps.aService;
   });
@@ -103,7 +103,7 @@ it('should handle access on properties that are not defined on dependency factor
     inject({
       value: () => '',
     }),
-  )(async event => event.deps['undefinedDependency']);
+  )(async (event) => event.deps['undefinedDependency']);
   await expect(_handler({})).resolves.toBeUndefined();
 });
 
@@ -124,7 +124,7 @@ describe('lazy injection', () => {
         a: aFactory,
         b: bFactory,
       }),
-    )(async event => event.deps.a);
+    )(async (event) => event.deps.a);
     const a = await _handler({});
 
     expect(a.getB()).toEqual({ isB: true });

@@ -1,5 +1,11 @@
 import { Next } from './Next';
 
-export type Middleware<InputType, NextType, ReturnTypeA = Promise<any>, ReturnTypeB = Promise<any>> = (
-  next: Next<NextType, ReturnTypeB>,
-) => Next<InputType, ReturnTypeA>
+export type Middleware<
+  TRequiredEvent,
+  TNextEvent,
+  TExpectedResult,
+  TTransformedResult,
+  TExtendedNext = {},
+> = (
+  next: Next<TNextEvent, TTransformedResult>,
+) => Next<TRequiredEvent, TExpectedResult> & TExtendedNext;

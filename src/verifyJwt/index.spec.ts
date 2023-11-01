@@ -18,7 +18,7 @@ beforeEach(() => {
       getToken: () => token,
       getSecretOrPublic: () => secret,
     }),
-  )(async event => {
+  )(async (event) => {
     spy(event.user);
   });
 });
@@ -41,9 +41,9 @@ describe('tokenFromHeaderFactory', () => {
   it('should create a function which retrieves token from header object', () => {
     const TOKEN = 'TOKEN';
     const getTokenFromHeader = tokenFromHeaderFactory();
-    const result = getTokenFromHeader(({
+    const result = getTokenFromHeader({
       sanitizedHeaders: { authorization: `Bearer ${TOKEN}` },
-    } as Partial<APIGatewayProxyEvent>) as any);
+    } as Partial<APIGatewayProxyEvent> as any);
 
     expect(result).toEqual(TOKEN);
   });
@@ -51,9 +51,9 @@ describe('tokenFromHeaderFactory', () => {
     const TOKEN = 'TOKEN';
     const CUSTOM_HEADER_NAME = 'auth';
     const getTokenFromHeader = tokenFromHeaderFactory(CUSTOM_HEADER_NAME);
-    const result = getTokenFromHeader(({
+    const result = getTokenFromHeader({
       sanitizedHeaders: { [CUSTOM_HEADER_NAME]: `Bearer ${TOKEN}` },
-    } as Partial<APIGatewayProxyEvent>) as any);
+    } as Partial<APIGatewayProxyEvent> as any);
 
     expect(result).toEqual(TOKEN);
   });
@@ -61,7 +61,7 @@ describe('tokenFromHeaderFactory', () => {
     const getTokenFromHeader = tokenFromHeaderFactory();
 
     expect(() =>
-      getTokenFromHeader(({ sanitizedHeaders: {} } as Partial<APIGatewayProxyEvent>) as any),
+      getTokenFromHeader({ sanitizedHeaders: {} } as Partial<APIGatewayProxyEvent> as any),
     ).toThrow(UnauthorizedError);
   });
 });
@@ -70,9 +70,9 @@ describe('tokenFromCookieFactory', () => {
   it('should create a function which retrieves token from cookie object', () => {
     const TOKEN = 'TOKEN';
     const getTokenFromCookie = tokenFromCookieFactory();
-    const result = getTokenFromCookie(({ cookie: { authentication: TOKEN } } as Partial<
-      APIGatewayProxyEvent
-    >) as any);
+    const result = getTokenFromCookie({
+      cookie: { authentication: TOKEN },
+    } as Partial<APIGatewayProxyEvent> as any);
 
     expect(result).toEqual(TOKEN);
   });
@@ -80,7 +80,7 @@ describe('tokenFromCookieFactory', () => {
     const getTokenFromCookie = tokenFromCookieFactory();
 
     expect(() =>
-      getTokenFromCookie(({ cookie: {} } as Partial<APIGatewayProxyEvent>) as any),
+      getTokenFromCookie({ cookie: {} } as Partial<APIGatewayProxyEvent> as any),
     ).toThrow(UnauthorizedError);
   });
 });

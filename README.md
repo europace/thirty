@@ -20,7 +20,6 @@ and type safe.
   - [`decoreParameters`](#decodeParameters)
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
-- [Routing](#routing)
 
 ## Install
 
@@ -35,28 +34,31 @@ npm install thirty
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from 'thirty/core';
 import { parseJson } from 'thirty/parseJson';
+import { serializeJson } from 'thirty/serializeJson';
 import { verifyJwt, tokenFromHeaderFactory } from 'thirty/verifyJwt';
 import { handleHttpErrors } from 'thirty/handleHttpErrors';
 import { inject } from 'thirty/inject';
+import { APIGatewayProxyResult } from 'thrirty/types/APIGatewayProxyResult';
 
 export const handler = compose(
-  eventType<APIGatewayProxyEvent>(),
+  types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
   inject({
     authService: authServiceFactory,
     userService: userServiceFactory,
   }),
   handleHttpErrors(),
-  parseJson(),
   verifyJwt({
     getToken: tokenFromHeaderFactory(),
     getSecretOrPublic: ({ deps }) => deps.authService.getSecret(),
   }),
+  parseJson(),
+  serializeJson(),
 )(async event => {
   const { userService } = event.deps;
   const user = await userService.createUser(event.jsonObject);
   return {
     statusCode: 201,
-    body: JSON.stringify(user),
+    body: user,
   };
 });
 ```
@@ -360,51 +362,4 @@ export const handler = compose(
 )(async event => {
   // ...
 });
-```
-
-## Routing
-
-`routing` is a wrapper for the actual handler function to define multiple routes and their corresponding handlers:
-
-```typescript
-import { createRoutes } from 'thirty/createRoutes';
-
-export const handler = compose(
-  eventType<APIGatewayProxyEvent>(),
-  inject({
-    userService: () => ({
-      /*...*/
-    }),
-  }),
-  parseJson(),
-)(
-  createRoutes(router => {
-    router.get('/users', ({ deps }) => {
-      return {
-        statusCode: 200,
-        body: JSON.stringify(deps.userService.getUsers()),
-      };
-    });
-
-    router.post('/users', async ({ deps, jsonBody }) => {
-      return {
-        statusCode: 201,
-        body: JSON.stringify(deps.userService.createUser(jsonBody)),
-      };
-    });
-
-    router.get('/users/:id', async ({ deps, params }) => {
-      const user = deps.userService.getUserById(params.id);
-      if (user) {
-        return {
-          statusCode: 200,
-          body: JSON.stringify(user),
-        };
-      }
-      return {
-        statusCode: 404,
-      };
-    });
-  }),
-);
 ```

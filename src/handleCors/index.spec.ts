@@ -1,18 +1,19 @@
-import { compose, eventType } from '../core';
+import { compose, types } from '../core';
 import { handleCors } from './index';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { sanitizeHeaders } from '../sanitizeHeaders';
 import { registerHttpErrorHandler } from '../registerHttpErrorHandler';
 import { NotFoundError } from '../errors';
+import { APIGatewayProxyResult } from '../types/APIGatewayProxyResult';
 
 let handler;
 
 beforeAll(() => {
   handler = compose(
-    eventType<APIGatewayProxyEvent>(),
+    types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
     sanitizeHeaders(),
     handleCors(),
-  )(async event => {
+  )(async (event) => {
     return {
       statusCode: 200,
       headers: {
@@ -50,10 +51,10 @@ it('should add handleCors headers on any other request', async () => {
 describe('with origin=test', () => {
   beforeAll(() => {
     handler = compose(
-      eventType<APIGatewayProxyEvent>(),
+      types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
       sanitizeHeaders(),
       handleCors({ origin: 'test' }),
-    )(async event => {
+    )(async (event) => {
       return {
         statusCode: 200,
         headers: {
@@ -76,10 +77,10 @@ describe('with origin=test', () => {
 describe('with origin=[test]', () => {
   beforeAll(() => {
     handler = compose(
-      eventType<APIGatewayProxyEvent>(),
+      types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
       sanitizeHeaders(),
       handleCors({ origin: ['test'] }),
-    )(async event => {
+    )(async (event) => {
       return {
         statusCode: 200,
         headers: {
@@ -105,7 +106,7 @@ describe('with origin=[test]', () => {
     });
     expect(response.headers).toEqual(
       expect.objectContaining({
-        'Access-Control-Allow-Origin': null,
+        'Access-Control-Allow-Origin': 'null',
       }),
     );
   });
@@ -114,10 +115,10 @@ describe('with origin=[test]', () => {
 describe('preflight', () => {
   beforeAll(() => {
     handler = compose(
-      eventType<APIGatewayProxyEvent>(),
+      types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
       sanitizeHeaders(),
       handleCors({ preflight: false }),
-    )(async event => {
+    )(async (event) => {
       return {
         statusCode: 200,
         headers: {
@@ -141,59 +142,29 @@ describe('preflight', () => {
 });
 
 describe('registerHttpErrorHandler', () => {
-  describe('after', () => {
-    beforeAll(() => {
-      handler = compose(
-        eventType<APIGatewayProxyEvent>(),
-        sanitizeHeaders(),
-        registerHttpErrorHandler(),
-        handleCors(),
-      )(async () => {
-        throw new NotFoundError('Not found');
-      });
-    });
-
-    it('should add access control headers after error appeared', async () => {
-      const response = await handler({ httpMethod: 'GET' });
-      expect(response).toEqual({
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
-        statusCode: 404,
-        body: JSON.stringify({
-          error: 'Not found',
-        }),
-      });
+  beforeAll(() => {
+    handler = compose(
+      types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
+      sanitizeHeaders(),
+      handleCors(),
+      registerHttpErrorHandler(),
+    )(async () => {
+      throw new NotFoundError('Not found');
     });
   });
 
-  describe('before', () => {
-    beforeAll(() => {
-      handler = compose(
-        eventType<APIGatewayProxyEvent>(),
-        sanitizeHeaders(),
-        handleCors(),
-        registerHttpErrorHandler(),
-      )(async () => {
-        throw new NotFoundError('Not found');
-      });
-    });
-
-    it('should add access control headers after error appeared', async () => {
-      const response = await handler({ httpMethod: 'GET' });
-      expect(response).toEqual({
-        headers: {
-          'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
-        statusCode: 404,
-        body: JSON.stringify({
-          error: 'Not found',
-        }),
-      });
+  it('should add access control headers after error appeared', async () => {
+    const response = await handler({ httpMethod: 'GET' });
+    expect(response).toEqual({
+      headers: {
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+      statusCode: 404,
+      body: JSON.stringify({
+        message: 'Not found',
+      }),
     });
   });
 });
