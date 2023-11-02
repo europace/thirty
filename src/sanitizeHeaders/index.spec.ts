@@ -9,7 +9,7 @@ beforeAll(() => {
   handler = compose(
     eventType<APIGatewayProxyEvent>(),
     sanitizeHeaders(),
-  )(async event => {
+  )(async (event) => {
     return event.sanitizedHeaders;
   });
 });

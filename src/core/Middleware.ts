@@ -1,5 +1,11 @@
-import { Handler } from './Handler';
+import { Next } from './Next';
 
-export type Middleware<InputType, ExtendedType, ExtendedHandlerType = {}> = (
-  handler: Handler<ExtendedType>,
-) => Handler<InputType> & ExtendedHandlerType;
+export type Middleware<
+  TRequiredEvent,
+  TNextEvent,
+  TExpectedResult,
+  TTransformedResult,
+  TExtendedNext = {},
+> = (
+  next: Next<TNextEvent, TTransformedResult>,
+) => Next<TRequiredEvent, TExpectedResult> & TExtendedNext;

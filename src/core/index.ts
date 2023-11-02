@@ -1,4 +1,4 @@
 export * from './compose';
-export * from './Handler';
+export * from './Next';
 export * from './eventType';
 export * from './Middleware';

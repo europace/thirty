@@ -12,14 +12,18 @@ it('should apply middlewares in reverse', async () => {
 
 it('should execute middleware handlers in order', async () => {
   const order: any[] = [];
-  const middleware1 = handler => (...args) => {
-    order.push(middleware1);
-    return handler(...args);
-  };
-  const middleware2 = handler => (...args) => {
-    order.push(middleware2);
-    return handler(...args);
-  };
+  const middleware1 =
+    (handler) =>
+    (...args) => {
+      order.push(middleware1);
+      return handler(...args);
+    };
+  const middleware2 =
+    (handler) =>
+    (...args) => {
+      order.push(middleware2);
+      return handler(...args);
+    };
 
   compose(middleware1, middleware2)(async () => {})({});
 
@@ -27,7 +31,10 @@ it('should execute middleware handlers in order', async () => {
 });
 
 it('should provide actual handler reference via "actual" property', async () => {
-  const middleware = actual => (...args) => actual(...args);
+  const middleware =
+    (actual) =>
+    (...args) =>
+      actual(...args);
   const actualHandler = async () => {};
   const handler = compose(middleware, middleware)(actualHandler);
 
@@ -35,7 +42,10 @@ it('should provide actual handler reference via "actual" property', async () => 
 });
 
 it('should not provide actual handler reference via "actual" property in case of 1 middleware', async () => {
-  const middleware = actual => (...args) => actual(...args);
+  const middleware =
+    (actual) =>
+    (...args) =>
+      actual(...args);
   const actualHandler = async () => {};
   const handler = compose(middleware)(actualHandler);
 
@@ -43,9 +53,11 @@ it('should not provide actual handler reference via "actual" property in case of
 });
 
 it('should be able to enhance events through middlewares', async () => {
-  const middleware = actual => (event, ...args) =>
-    actual(Object.assign(event, { test: 1 }), ...args);
-  const actualHandler = async event => event.test;
+  const middleware =
+    (actual) =>
+    (event, ...args) =>
+      actual(Object.assign(event, { test: 1 }), ...args);
+  const actualHandler = async (event) => event.test;
   const handler = compose(middleware)(actualHandler);
   const event = {};
 

@@ -1,5 +1,6 @@
 import { Middleware } from '../core';
 import { BaseError } from '../errors';
+import { APIGatewayProxyResult } from '../types/APIGatewayProxyResult';
 
 export type BlacklistItem = {
   alternativeMessage: string;
@@ -53,31 +54,30 @@ type HttpErrorHandlerRequiredEvents = {
   deps?: { logger?: ErrorLogger };
 };
 
-export const registerHttpErrorHandler = <T extends HttpErrorHandlerRequiredEvents>(
-  options: HttpErrorHandlerOptions = {},
-): Middleware<T, T> => handler => async (event, ...args) =>
-  handler(event, ...args).catch(errorOrErrorAndResponse => {
-    const [err, response] = Array.isArray(errorOrErrorAndResponse)
-      ? errorOrErrorAndResponse
-      : [errorOrErrorAndResponse];
-    const resolvedOptions = { ...defaultOptions, ...options };
-    const logError = getLogError(event, resolvedOptions);
-    if (err) {
-      logError(err);
-    }
-    const { statusCode, message } = getSafeResponse(resolvedOptions, err);
-    return {
-      ...response,
-      statusCode,
-      headers: {
-        ...response?.headers,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        error: message,
-      }),
-    };
-  });
+export const registerHttpErrorHandler =
+  <T extends HttpErrorHandlerRequiredEvents, R extends APIGatewayProxyResult>(
+    options: HttpErrorHandlerOptions = {},
+  ): Middleware<T, T, Promise<R>, Promise<R>> =>
+  (handler) =>
+  async (event, ...args) =>
+    handler(event, ...args).catch((error) => {
+      const resolvedOptions = { ...defaultOptions, ...options };
+      const logError = getLogError(event, resolvedOptions);
+      if (error) {
+        logError(error);
+      }
+      const { statusCode, message, ...errorProps } = getSafeResponse(resolvedOptions, error);
+      return {
+        statusCode,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          ...errorProps,
+        }),
+      } satisfies APIGatewayProxyResult as unknown as R;
+    });
 
 export const getLogError = (
   event: HttpErrorHandlerRequiredEvents,

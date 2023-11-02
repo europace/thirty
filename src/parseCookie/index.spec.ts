@@ -1,16 +1,15 @@
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { serialize } from 'cookie';
-
 import { parseCookie } from './index';
-import { compose, eventType } from '../core';
+import { compose, types } from '../core';
 
 let handler;
 
 beforeAll(() => {
   handler = compose(
-    eventType<APIGatewayProxyEvent>(),
+    types<APIGatewayProxyEvent, any>(),
     parseCookie(),
-  )(async event => {
+  )(async (event) => {
     return event.cookie;
   });
 });

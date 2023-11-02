@@ -12,30 +12,32 @@ type XsrfCheckOptions<T> = {
   headerName?: string;
 };
 type XsrfVerificationRequiredEvent = APIGatewayProxyEvent & SanitizedHeadersEvent;
-export const verifyXsrfToken = <T extends XsrfVerificationRequiredEvent>({
-  getSecret,
-  headerName,
-}: XsrfCheckOptions<T>): Middleware<T, T> => handler => {
-  let csrf: Csrf | undefined;
-  return async (event, ...rest) => {
-    if (!csrf) {
-      csrf = new Csrf({ saltLength: 256 });
-    }
+export const verifyXsrfToken =
+  <T extends XsrfVerificationRequiredEvent, R>({
+    getSecret,
+    headerName,
+  }: XsrfCheckOptions<T>): Middleware<T, T, Promise<R>, R> =>
+  (handler) => {
+    let csrf: Csrf | undefined;
+    return async (event, ...rest) => {
+      if (!csrf) {
+        csrf = new Csrf({ saltLength: 256 });
+      }
 
-    const token = event.sanitizedHeaders[headerName || XSRF_HEADER_NAME];
-    if (!token || !token.length) {
-      throw new UnauthorizedError();
-    }
+      const token = event.sanitizedHeaders[headerName || XSRF_HEADER_NAME];
+      if (!token || !token.length) {
+        throw new UnauthorizedError();
+      }
 
-    const secret = await getSecret({ event });
-    if (!secret) {
-      throw new UnauthorizedError();
-    }
+      const secret = await getSecret({ event });
+      if (!secret) {
+        throw new UnauthorizedError();
+      }
 
-    if (!csrf.verify(secret, token)) {
-      throw new UnauthorizedError();
-    }
+      if (!csrf.verify(secret, token)) {
+        throw new UnauthorizedError();
+      }
 
-    return handler(event, ...rest);
+      return handler(event, ...rest);
+    };
   };
-};
