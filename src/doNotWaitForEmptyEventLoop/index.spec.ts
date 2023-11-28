@@ -5,17 +5,13 @@ import { inject } from '../inject';
 let handler;
 
 beforeEach(() => {
-  handler = compose(
-    types<{}, any>(),
-    inject({}),
-    doNotWaitForEmptyEventLoop(),
-  )(async () => {});
+  handler = compose(types<{}, any>(), inject({}), doNotWaitForEmptyEventLoop())(async () => {});
 });
 
 it('should set callbackWaitsForEmptyEventLoop to false', async () => {
   const context = {};
   await handler({}, context);
   expect(context).toEqual({
-    callbackWaitsForEmptyEventLoop: false
+    callbackWaitsForEmptyEventLoop: false,
   });
 });
