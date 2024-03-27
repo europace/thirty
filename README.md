@@ -1,13 +1,19 @@
-# λ thirty
+<h1 align="center">
+  <br>
+  thirty
+  <br>
+</h1>
 
-Lightweight extensions that make AWS Lambda functions easy to develop, testable
-and type safe.
+<h4 align="center">A middleware engine for AWS Lambda, that makes Lambda Functions type-safe, easy to develop and test.</h4>
 
-> _In the system of Greek numerals lambda has a value of 30_ > https://en.wikipedia.org/wiki/Lambda
+<p align="center">
+  <img src="https://img.shields.io/npm/v/thirty.svg">
+  <img src="https://github.com/europace/thirty/actions/workflows/checks.yml/badge.svg">
+</p>
+<br>
 
-- [Install](#install)
-- [Usage](#usage)
-- [Publish](#publish)
+- [Installation](#installation)
+- [Getting started](#getting-started)
 - [Testing](#testing)
 - [`compose`](#compose)
 - [Middlewares](#middlewares)
@@ -15,28 +21,29 @@ and type safe.
   - [`inject`](#inject)
   - [`parseCookie`](#parsecookie)
   - [`parseJson`](#parsejson)
-  - [`handleHttpErrors`](#handlehttperrors)
+  - [`registerHttpErrorHandler`](#registerhttperrorhandler)
   - [`sanitizeHeaders`](#sanitizeheaders)
-  - [`decoreParameters`](#decodeParameters)
+  - [`decodeParameters`](#decodeparameters)
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
+- [Publish](#publish)
+<br>
 
-## Install
+## Installation
 
 ```shell script
 npm install thirty
 ```
 
-## Usage
+## Getting started
 
 ```typescript
-// handler.ts
 import { APIGatewayProxyEvent } from 'aws-lambda';
 import { compose, eventType } from 'thirty/core';
 import { parseJson } from 'thirty/parseJson';
 import { serializeJson } from 'thirty/serializeJson';
 import { verifyJwt, tokenFromHeaderFactory } from 'thirty/verifyJwt';
-import { handleHttpErrors } from 'thirty/handleHttpErrors';
+import { registerHttpErrorHandler } from 'thirty/registerHttpErrorHandler';
 import { inject } from 'thirty/inject';
 import { APIGatewayProxyResult } from 'thrirty/types/APIGatewayProxyResult';
 
@@ -46,16 +53,12 @@ export const handler = compose(
     authService: authServiceFactory,
     userService: userServiceFactory,
   }),
-  handleHttpErrors(),
-  verifyJwt({
-    getToken: tokenFromHeaderFactory(),
-    getSecretOrPublic: ({ deps }) => deps.authService.getSecret(),
-  }),
+  registerHttpErrorHandler(),
   parseJson(),
   serializeJson(),
 )(async event => {
   const { userService } = event.deps;
-  const user = await userService.createUser(event.jsonObject);
+  const user = await userService.createUser(event.jsonBody);
   return {
     statusCode: 201,
     body: user,
@@ -63,21 +66,9 @@ export const handler = compose(
 });
 ```
 
-## Publish
-
-In order to publish a new version to npm, create a new release on github. 
-1. Create a tag. The tag needs to follow semver (Don't prefix the version 
-number with "v" as suggested by github). e.g. `1.7.0`
-2. Define a release title
-3. Generate release notes by clicking "Generate release notes"
-4. Click "Publish release"
-
-> ℹ️ The package will automatically bundled and published to npm via the 
-> `publish.yml` workflow.
-
 ## Testing
 
-The `compose`d handler function also provides a reference to the actual handler
+The `compose`d handler function exposes a reference to the actual handler
 via the `actual` property:
 
 ```typescript
@@ -97,21 +88,21 @@ it('should return created user', async () => {
   expect(body).toEqual(user);
 });
 ```
+This makes it possible to easily unit test the business code without retesting middleware-functionality again.
 
 ## `compose`
 
 `compose` is a common implementation of [Function_composition](https://en.wikipedia.org/wiki/Function_composition)
 and the heart of _thirty_.
 
-On top of that it provides typings so that TypeScript can infer the typings provided by the passed middlewares.
+On top of that `compose` provides typings so that the event type, which is extended by middlewares, can be inferred.
 
 ```typescript
 export const handler = compose(
-  eventType<{ someType: string }>(),
-  someAuthMiddleware(),
+  types<{ inputA: number; inputB: number }, string>(),
+  serializeJson(),
 )(async event => {
-  event.someType;
-  event.user;
+  return event.inputA + event.inputB;
 });
 ```
 
@@ -363,3 +354,15 @@ export const handler = compose(
   // ...
 });
 ```
+
+## Publish
+
+In order to publish a new version to npm, create a new release on github. 
+1. Create a tag. The tag needs to follow semver (Don't prefix the version 
+number with "v" as suggested by github). e.g. `1.7.0`
+2. Define a release title
+3. Generate release notes by clicking "Generate release notes"
+4. Click "Publish release"
+
+> ℹ️ The package will automatically bundled and published to npm via the 
+> `publish.yml` workflow.
