@@ -19,6 +19,7 @@
 - [Middlewares](#middlewares)
   - [`handleCors`](#handlecors)
   - [`inject`](#inject)
+  - [`doNotWaitForEmptyEventLoop`](#donotwaitforemptyeventloop)
   - [`serializeJson`](#serializejson)
   - [`parseJson`](#parsejson)
   - [`registerHttpErrorHandler`](#registerhttperrorhandler)
@@ -200,6 +201,22 @@ it('should return created user', async () => {
   };
   const result = await handler.actual(eventMock);
   // assertion goes here
+});
+```
+
+### `doNotWaitForEmptyEventLoop`
+
+Sets `context.callbackWaitsForEmptyEventLoop` to false.
+
+From [official documentation](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-context.html):
+> callbackWaitsForEmptyEventLoop – Set to false to send the response right away when the callback runs, instead of waiting for the Node.js event loop to be empty. If this is false, any outstanding events continue to run during the next invocation.
+
+```ts
+const handler = compose(
+  types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(), 
+  doNotWaitForEmptyEventLoop(),
+)(async (event) => {
+
 });
 ```
 
