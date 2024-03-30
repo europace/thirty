@@ -27,6 +27,7 @@
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
   - [`parseCookie`](#parsecookie)
+  - [`forEachSqsRecord`](#foreachsqsrecord)
 - [Publish](#publish)
 <br>
 
