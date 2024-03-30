@@ -467,6 +467,10 @@ const handler = compose(
 });
 ```
 
+Use `sequential` set to `true` in order to iterate over the records in order. If one record fails to be processed, the 
+processing of any upcoming records will be stopped, stopped too. If `batchItemFailures` is also set to `true`, 
+all unprocessed records will be added to list of `batchItemFailures`.
+
 ## Publish
 
 In order to publish a new version to npm, create a new release on github. 
