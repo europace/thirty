@@ -19,13 +19,14 @@
 - [Middlewares](#middlewares)
   - [`handleCors`](#handlecors)
   - [`inject`](#inject)
-  - [`parseCookie`](#parsecookie)
+  - [`serializeJson`](#serializejson)
   - [`parseJson`](#parsejson)
   - [`registerHttpErrorHandler`](#registerhttperrorhandler)
   - [`sanitizeHeaders`](#sanitizeheaders)
   - [`decodeParameters`](#decodeparameters)
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
+  - [`parseCookie`](#parsecookie)
 - [Publish](#publish)
 <br>
 
@@ -153,7 +154,7 @@ The above example would create an error response that would look like:
 
 ### `inject`
 
-`inject` is a middleware that provides lightweight dependency injection with the possibility of circular dependencies.
+`inject` is a middleware that provides lightweight dependency injection.
 
 In order to create a dependency injection container, just define an object, where its properties refer to factory
 methods.
@@ -173,7 +174,7 @@ export const handler = compose(
 });
 ```
 
-Each factory gets a reference to the created dependency container:
+Each factory gets access all dependencies defined in the container:
 
 ```typescript
 export type AuthServiceDeps = { userService: UserService };
@@ -201,33 +202,69 @@ it('should return created user', async () => {
 });
 ```
 
-### `parseCookie`
+### `parseJson`
 
-`parseCookie` is a middleware that parses the event cookie header and extends the event object by a cookie object:
+`parseJson` is a middleware that parses the request body and extends the event object by a `jsonBody` object:
 
 ```typescript
-import { parseCookie } from 'thirty/parseCookie';
+import { compose, types, of } from 'thirty/core';
+import { parseJson } from 'thirty/parseJson';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+
+type SomeDto = { description: string };
 
 export const handler = compose(
-  eventType<{ someType: string }>(),
-  parseCookie(),
+  types<APIGatewayProxyEvent, Promise<APIGatewayProxyResult>>(),
+  parseJson(of<SomeDto>),
 )(async event => {
-  event.cookie;
+  const { description } = event.jsonBody;
+    
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ id: uuid(), description }),
+  };
 });
 ```
 
-### `parseJson`
+### `serializeJson`
 
-`parseJson` is a middleware that parses the event body and extends the event object by a `jsonBody` object:
+Before that middleware you had to serialize your response body's manually and parse it back again in your tests in order to assert response bodys - especially partially.
+```ts
+type User = {id: string; name: string};
+```
+```ts
+const handler = compose(
+  types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
+)(async (event) => {
+  return {
+    statusCode: 200,
+    body: JSON.stringify({id: 'USER_1', name: 'Marty'} as User),
+  };
+});
 
-```typescript
-import { parseCookie } from 'thirty/parseCookie';
+const response = await handler.actual({...});
+expect(response.statusCode).toEqual(200);
+expect(JSON.parse(response.body)).toEqual(expect.objectContaining({
+     id: 'USER_1'
+  }));
 
-export const handler = compose(
-  eventType<{ someType: string }>(),
-  parseJson(),
-)(async event => {
-  event.jsonBody;
+```
+But `serializeJson` makes type-safe and testing less verbose:
+```ts
+const handler = compose(
+  types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
+  serializeJson(of<User>),
+)(async (event) => {
+  return {
+    statusCode: 200,
+    body: {id: 'USER_1', name: 'Marty'},
+  };
+});
+
+const response = await handler.actual({...});
+expect(response).toEqual({
+   statusCode: 200,
+   body: expect.objectContaining({ id: 'USER_1' })
 });
 ```
 
@@ -279,7 +316,7 @@ import { decodeParameters } from 'thirty/decodeParameters';
 
 export const handler = compose(
   eventType<{ someType: string }>(),
-        decodeParameters(),
+  decodeParameters(),
 )(async event => {
   event.decodeParameters;
   event.decodedQueryParameters;
@@ -352,6 +389,63 @@ export const handler = compose(
   }),
 )(async event => {
   // ...
+});
+```
+
+### `parseCookie`
+
+`parseCookie` is a middleware that parses the event cookie header and extends the event object by a `cookie` object:
+
+```typescript
+import { parseCookie } from 'thirty/parseCookie';
+
+export const handler = compose(
+  eventType<{ someType: string }>(),
+  parseCookie(),
+)(async event => {
+  event.cookie;
+});
+```
+
+### `forEachSqsRecord`
+
+Consider the following setup not using that middleware:
+```ts
+type SomeMesssage = {id: string; text: string};
+```
+```ts
+const handler = compose(
+  types<SQSEvent, Promise<SQSBatchResponse>>(),
+)(async (event) => {
+  return {
+    batchItemFailures: (
+      await Promise.all(
+        event.Records.map((record) => {
+          try {
+            const message: SomeMessage = JSON.parse(record.body);
+            // process message
+          } catch (e) {
+            return {
+              itemIdentifier: record.messageId,
+            };
+          }
+        }),
+      )
+    ).filter((maybeItemFailure): maybeItemFailure is SQSBatchItemFailure => !!maybeItemFailure),
+  };
+});
+```
+You have to do a lot of boilerplate code, which makes the actual business code of processing one message hard to read. `forEachSqsRecord` lets you process one message without any of that boilerplate:
+```ts
+const handler = compose(
+  types<SQSEvent, Promise<SQSBatchResponse>>(),
+  forEachSqsRecord({
+    batchItemFailures: true,
+    bodyType: of<SomeMessage>,
+  })
+)(async (event) => {
+  const message = event.record.body;
+  // process message
 });
 ```
 

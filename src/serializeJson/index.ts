@@ -1,6 +1,6 @@
 import { APIGatewayProxyResult } from '../types/APIGatewayProxyResult';
 import { Middleware } from '../core';
-import { TypeRef } from '../types/TypeRef';
+import { TypeRef } from '../core/TypeRef';
 
 export type SerializeJsonOptions<TBody = object> = Omit<APIGatewayProxyResult, 'body'> & {
   body?: TBody;
