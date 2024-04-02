@@ -17,13 +17,13 @@
 - [Testing](#testing)
 - [`compose`](#compose)
 - [Middlewares](#middlewares)
-  - [`handleCors`](#handlecors)
   - [`inject`](#inject)
   - [`doNotWaitForEmptyEventLoop`](#donotwaitforemptyeventloop)
   - [`serializeJson`](#serializejson)
   - [`parseJson`](#parsejson)
   - [`registerHttpErrorHandler`](#registerhttperrorhandler)
   - [`sanitizeHeaders`](#sanitizeheaders)
+  - [`handleCors`](#handlecors)
   - [`decodeParameters`](#decodeparameters)
   - [`verifyJwt`](#verifyjwt)
   - [`verifyXsrfToken`](#verifyxsrftoken)
@@ -120,40 +120,6 @@ handler.actual === actual; // true
 
 ## Middlewares
 
-### `handleCors`
-
-`handleCors` is a middleware that creates a preflight response to `OPTIONS` requests and adds CORS headers to any other
-request.
-
-> Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
-
-```typescript
-import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
-import { handleCors } from 'thirty/handleCors';
-
-export const handler = compose(
-  eventType<APIGatewayProxyEvent>(),
-  sanitizeHeaders(),
-  handleCors(),
-)(async event => {
-  // ...
-});
-```
-
-#### [`CorsOptions`](src/handleCors/index.ts)
-
-The above example would create an error response that would look like:
-
-```json
-{
-  "statusCode": 400,
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": "{\"error\":\"Parameter x missing\"}"
-}
-```
-
 ### `inject`
 
 `inject` is a middleware that provides lightweight dependency injection.
@@ -215,7 +181,7 @@ From [official documentation](https://docs.aws.amazon.com/lambda/latest/dg/nodej
 const handler = compose(
   types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(), 
   doNotWaitForEmptyEventLoop(),
-)(async (event) => {
+)(async event => {
 
 });
 ```
@@ -253,7 +219,7 @@ type User = {id: string; name: string};
 ```ts
 const handler = compose(
   types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
-)(async (event) => {
+)(async event => {
   return {
     statusCode: 200,
     body: JSON.stringify({id: 'USER_1', name: 'Marty'} as User),
@@ -272,7 +238,7 @@ But `serializeJson` makes type-safe and testing less verbose:
 const handler = compose(
   types<APIGatewayEvent, Promise<APIGatewayProxyResult>>(),
   serializeJson(of<User>),
-)(async (event) => {
+)(async event => {
   return {
     statusCode: 200,
     body: {id: 'USER_1', name: 'Marty'},
@@ -304,6 +270,17 @@ export const handler = compose(
   throw new BadRequestError('Parameter x missing');
 });
 ```
+The above example would create an error response that would look like:
+
+```json
+{
+  "statusCode": 400,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"error\":\"Parameter x missing\"}"
+}
+```
 
 #### [`HttpErrorHandlerOptions`](src/registerHttpErrorHandler/index.ts)
 
@@ -323,6 +300,28 @@ export const handler = compose(
   event.sanitizedHeaders;
 });
 ```
+
+### `handleCors`
+
+`handleCors` is a middleware that creates a preflight response to `OPTIONS` requests and adds CORS headers to any other
+request.
+
+> Requires [`sanitizeHeaders`](#sanitizeHeaders) middleware
+
+```typescript
+import { sanitizeHeaders } from 'thirty/sanitizeHeaders';
+import { handleCors } from 'thirty/handleCors';
+
+export const handler = compose(
+  eventType<APIGatewayProxyEvent>(),
+  sanitizeHeaders(),
+  handleCors(),
+)(async event => {
+  // ...
+});
+```
+
+#### [`CorsOptions`](src/handleCors/index.ts)
 
 ### `decodeParameters`
 
@@ -434,7 +433,7 @@ type SomeMesssage = {id: string; text: string};
 ```ts
 const handler = compose(
   types<SQSEvent, Promise<SQSBatchResponse>>(),
-)(async (event) => {
+)(async event => {
   return {
     batchItemFailures: (
       await Promise.all(
@@ -461,7 +460,7 @@ const handler = compose(
     batchItemFailures: true,
     bodyType: of<SomeMessage>,
   })
-)(async (event) => {
+)(async event => {
   const message = event.record.body;
   // process message
 });
