@@ -2,7 +2,7 @@ import { compose, types } from '../core';
 import { APIGatewayEvent } from 'aws-lambda';
 import { serializeJson } from './';
 import { APIGatewayProxyResult } from '../types/APIGatewayProxyResult';
-import { of } from '../types/TypeRef';
+import { of } from '../core/TypeRef';
 
 describe('given no body type is specified', () => {
   const createHandler = () =>
