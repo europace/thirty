@@ -1,6 +1,6 @@
 {
   "name": "thirty",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "Lightweight extensions that makes AWS Lambda functions easy to develop, testable and type safe.",
   "repository": {
     "type": "git",
