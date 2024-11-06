@@ -18,16 +18,20 @@ it('should execute middleware handlers in order', async () => {
       order.push(middleware1);
       return handler(...args);
     };
+  middleware1['meta'] = {1: '1'};
   const middleware2 =
     (handler) =>
     (...args) => {
       order.push(middleware2);
       return handler(...args);
     };
+  middleware2['meta'] = {2: '2'};
 
-  compose(middleware1, middleware2)(async () => {})({});
+  const composedHandler = compose(middleware1, middleware2)(async () => {});
+  composedHandler({});
 
   expect(order).toEqual([middleware1, middleware2]);
+  expect(composedHandler['meta']).toEqual({1: '1', 2: '2'});
 });
 
 it('should provide actual handler reference via "actual" property', async () => {

@@ -293,5 +293,5 @@ export function compose<E1, E2, E3, R1, R2, R3>(
 // -> Anyway: This should be fixed in the future
 export function compose<E1, E2, R1, R2>(f: Middleware<E1, E2, R1, R2>): Middleware<E1, E2, R1, R2>;
 export function compose(...fns) {
-  return fns.reduce((f, g) => (handler) => Object.assign(f(g(handler)), { actual: handler }));
+  return fns.reduce((f, g) => (handler) => Object.assign(f(g(handler)), { actual: handler, meta: {...f.meta, ...g.meta} }));
 }
