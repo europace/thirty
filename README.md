@@ -1,4 +1,3 @@
-> [!WARNING]
 > ## ⚠️ This package is deprecated and no longer maintained.
 >
 > Please use [**thrty**](https://github.com/europace/thrty) instead, which is the actively
