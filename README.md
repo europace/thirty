@@ -12,6 +12,16 @@
 </p>
 <br>
 
+> [!WARNING]
+> **This package is deprecated and no longer maintained.**
+>
+> Please use [**thrty**](https://github.com/europace/thrty) instead, which is the actively
+> maintained successor of this package.
+>
+> No further releases, bug fixes or security updates will be published for `thirty`.
+
+<br>
+
 - [Installation](#installation)
 - [Getting started](#getting-started)
 - [Testing](#testing)
