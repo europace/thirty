@@ -22,6 +22,11 @@ jobs:
           node-version: 20
           registry-url: 'https://registry.npmjs.org/'
 
+      - name: Whoami
+        run: 'npm whoami'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       # Inputs go through env, not ${{ }} interpolation, so a message containing
       # quotes or backticks can't break out into the shell.
       - name: Deprecate
